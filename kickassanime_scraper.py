@@ -37,10 +37,12 @@ class kickass:
                 data = await kickass._get_data(i)
                 # print(data.keys())
                 results = data["anime"]["episodes"]
-        self.last_episode = int(results[0]["slug"].split("/")[-1].split("-")[1])
+        self.last_episode = int(
+            results[0]["slug"].split("/")[-1].split("-")[1])
         return ("https://www2.kickassanime.rs" + i["slug"] for i in results)
 
-    async def get_embeds(self, episode_link=None):
+    async def get_embeds(self, episode_link=None) -> dict:
+        ''' player, download, ep_num '''
         if episode_link == None:
             if self.episode_link == None:
                 raise Exception("no url supplied")
@@ -48,8 +50,8 @@ class kickass:
                 pass
         else:
             self.episode_link = episode_link
-        self.episode_num = int(self.episode_link.split("/")[-1].split("-")[1])
-        print(f"Getting episode {self.episode_num}")
+        episode_num = int(self.episode_link.split("/")[-1].split("-")[1])
+        print(f"Getting episode {episode_num}")
         soup = await fetch(self.episode_link, self.session)
         for i in soup.find_all("script"):
             if "appUrl" in str(i):
@@ -66,6 +68,9 @@ class kickass:
         ret = {"player": None, "download": None}
         for j, i in enumerate(result):
             ret[list(ret.keys())[j]] = i
+
+        ret['download'] = await self.get_servers(ret['download'])
+        ret['ep_num'] = episode_num
         return ret
 
     async def get_servers(self, dow_link):
@@ -79,7 +84,7 @@ class kickass:
         gen = await self.scrape_episodes()
         ed = end or self.last_episode
         if end != None:
-            for i, x in enumerate(gen):
+            for i, _ in enumerate(gen):
                 if i != self.last_episode - ed - 1:
                     pass
                 else:
@@ -92,6 +97,12 @@ class kickass:
             if n < flag:
                 n += 1
                 yield self.get_embeds(i)
+
+    async def get_download(self, download_links: tuple) -> str:
+        pass
+
+    async def get_from_player(self, player: str) -> str:
+        pass
 
 
 class player(kickass):
@@ -117,25 +128,31 @@ class player(kickass):
 
 
 if __name__ == "__main__":
+    import uvloop
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     async def main():
-        link = "https://www2.kickassanime.rs/anime/talentless-nana-407356/episode-13-656327"
+        link = "https://www2.kickassanime.rs/anime/noblesse-235053/episode-13-746322"
         async with ClientSession() as sess:
             var = kickass(sess, link)
             print(var.name, var.base_url)
-            # res = await var.scrape_episodes()
             tasks = []
-            async for i in var.get_episodes_embeds_range(3, 4):
+            async for i in var.get_episodes_embeds_range(3):
                 tasks.append(i)
-            # print(var.last_episode)
             embed_result = await asyncio.gather(*tasks)
-            tasks2 = []
+
+            # tasks_2 = []
             for i in embed_result:
-                tasks2.append(var.get_servers(i["download"]))
-            server_result = await asyncio.gather(*tasks2)
-            for i in server_result:
-                for j in i:
+                print(f"Starting episode {i['ep_num']}")
+                for j in i['download']:
                     print(j)
+                    break
+                # if None in i['download']:
+                #     tasks_2.append(var.get_from_player(i['player']))
+                # else:
+                #     tasks_2.append(var.get_download(i["download"]))
+
+            # links = await asyncio.gather(*tasks_2)
             # print(links)
 
     asyncio.get_event_loop().run_until_complete(main())
