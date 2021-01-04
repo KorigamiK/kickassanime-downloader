@@ -42,7 +42,7 @@ class kickass:
         return ("https://www2.kickassanime.rs" + i["slug"] for i in results)
 
     async def get_embeds(self, episode_link=None) -> dict:
-        ''' player, download, ep_num '''
+        ''' player, download, ep_num, ext_servers '''
         if episode_link == None:
             if self.episode_link == None:
                 raise Exception("no url supplied")
@@ -57,18 +57,32 @@ class kickass:
             if "appUrl" in str(i):
                 data = await kickass._get_data(i)
                 break
-        # print(data['episode'])
+
         result = []
+        # for i,j in data["episode"].items():
+        #     print(i,j)
         for i in data["episode"].values():
             try:
                 if "http" in i:
                     result.append(i)
             except TypeError:
                 pass
-        ret = {"player": None, "download": None}
-        for j, i in enumerate(result):
-            ret[list(ret.keys())[j]] = i
-
+        # print(result)
+        ret = {"player": [], "download": None, "ext_servers": None}
+        for i in result:
+            if 'mobile2' in i.split('/'):
+                # print('yes')
+                ret['download'] = i.strip()
+            else:
+                # print('no')
+                ret['player'].append(i.strip())
+        try:
+            if data['ext_servers'] != None:
+                ret["ext_servers"] = data['ext_servers']
+            else:
+                pass
+        except:
+            print('ext server error')
         ret['download'] = await self.get_servers(ret['download'])
         ret['ep_num'] = episode_num
         return ret
@@ -128,25 +142,25 @@ class player(kickass):
 
 
 if __name__ == "__main__":
-    import uvloop
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    # import uvloop
+    # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     async def main():
-        link = "https://www2.kickassanime.rs/anime/noblesse-235053/episode-13-746322"
+        link = "https://www2.kickassanime.rs/anime/one-piece-779470/episode-800-827815"
         async with ClientSession() as sess:
             var = kickass(sess, link)
             print(var.name, var.base_url)
             tasks = []
-            async for i in var.get_episodes_embeds_range(3):
+            async for i in var.get_episodes_embeds_range(800, 800):
                 tasks.append(i)
             embed_result = await asyncio.gather(*tasks)
 
             # tasks_2 = []
             for i in embed_result:
                 print(f"Starting episode {i['ep_num']}")
-                for j in i['download']:
-                    print(j)
-                    break
+                print(i['player'])
+                print(list(i['download']))
+                print(i['ext_servers'])
                 # if None in i['download']:
                 #     tasks_2.append(var.get_from_player(i['player']))
                 # else:
