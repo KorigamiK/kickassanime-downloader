@@ -3,7 +3,9 @@ import json
 import asyncio
 from async_web import fetch
 from aiohttp import ClientSession
-
+from anime_pace_scraperasdf import scraper
+from downloader import download
+import os 
 
 class kickass:
     def __init__(
@@ -68,7 +70,7 @@ class kickass:
             except TypeError:
                 pass
         # print(result)
-        ret = {"player": [], "download": None, "ext_servers": None}
+        ret = {"player": [], "download": None, "ext_servers": None, "can_download": True}
         for i in result:
             if 'mobile2' in i.split('/'):
                 # print('yes')
@@ -83,7 +85,10 @@ class kickass:
                 pass
         except:
             print('ext server error')
-        ret['download'] = await self.get_servers(ret['download'])
+        if ret['download'] != None:
+            ret['download'] = await self.get_servers(ret['download'])
+        else:
+            i["can_download"] = False
         ret['ep_num'] = episode_num
         return ret
 
@@ -113,10 +118,31 @@ class kickass:
                 yield self.get_embeds(i)
 
     async def get_download(self, download_links: tuple) -> str:
-        pass
+        with open('config.json') as file:
+            priority = json.loads(file.read())       
+        available = []
+        # print(type(priority))
+        for i in download_links:
+            # print(i[0])
+            if i[0] in priority.keys(): 
+                available.append(i)
+        # print(available)
+        await asyncio.sleep(0)
+        flag = 999
+        final = None
+        for i in available:
+            if list(priority.keys()).index(i[0]) < flag:
+                flag = list(priority.keys()).index(i[0])
+                final = i
+        print(final[0])
+        a = scraper(self.base_url)
+        a.quality = priority[final[0]]
+        a.get_final_links(final[1])
+        return a.final_dow_urls[0]
 
-    async def get_from_player(self, player: str) -> str:
-        pass
+    async def get_from_player(self, player: list) -> str:
+        print('not implemented yet')
+        return
 
 
 class player(kickass):
@@ -142,33 +168,34 @@ class player(kickass):
 
 
 if __name__ == "__main__":
+    
     # import uvloop
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     async def main():
-        link = "https://www2.kickassanime.rs/anime/one-piece-779470/episode-800-827815"
+        link = "https://www2.kickassanime.rs/anime/sorcery-fight-723619/episode-13-120044"
         async with ClientSession() as sess:
             var = kickass(sess, link)
             print(var.name, var.base_url)
             tasks = []
-            async for i in var.get_episodes_embeds_range(800, 800):
+            async for i in var.get_episodes_embeds_range(12, 13):
                 tasks.append(i)
             embed_result = await asyncio.gather(*tasks)
 
-            # tasks_2 = []
+            tasks_2 = []
             for i in embed_result:
                 print(f"Starting episode {i['ep_num']}")
-                print(i['player'])
-                print(list(i['download']))
+                # print(i['player'])
                 print(i['ext_servers'])
-                # if None in i['download']:
-                #     tasks_2.append(var.get_from_player(i['player']))
-                # else:
-                #     tasks_2.append(var.get_download(i["download"]))
-
-            # links = await asyncio.gather(*tasks_2)
-            # print(links)
-
+                if i["can_download"]:
+                    tasks_2.append(var.get_download(i["download"]))                    
+                else:
+                    tasks_2.append(var.get_from_player(i['player']))
+            links = await asyncio.gather(*tasks_2)
+            if input('download now y/n?: ') == 'y':
+                download([i.replace(' ', '%20') for i in links], os.getcwd())
+            else:
+                pass
     asyncio.get_event_loop().run_until_complete(main())
     # p = 'https://kaa-play.com/dust/player.php?link=lMPAFDFNWf9Bx5XWn@LhO@YLW@9Yf5A0V71PhAAfaBs9nxid3Y3vlRNEHYJM514CxhjcXIctd57Gga8t2KOdvFrlI3CLvcnxeLgWUrDQ7agyuqHLJPizr8q99qN9j@VOFa7kTxYGZjlLi3e9uFe55/gDiREKw1o0anUU5cMAz42lXswNCw4V9AjJXAF5CJSiVJ2mFiJhDXpBZEV3Xj92kgAEo3TgCHdaQ0aZjRmIPmJemX1b&link2=lMPAFDFNWf9Bx5XWn@LhO@YLW@9Yf5A0V71PhAAfaBs9nxid3Y3vlRNEHYJM514CxhjcXIctd57Gga8t2KOdvFrlI3CLvcnxeLgWUrDQ7agyuqHLJPizr8q99qN9j@VOFa7kTxYGZjlLi3e9uFe55/gDiREKw1o0anUU5cMAz42lXswNCw4V9AjJXAF5CJSiVJ2mFiJhDXpBZEV3Xj92kgAEo3TgCHdaQ0aZjRmIPmJemX1b&link3=&link4=&link5=&link6=&link7=&link8=&link9=&link10=&link11='
     # a = player()
