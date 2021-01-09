@@ -32,7 +32,7 @@ def download(urls, destfolder, numthreads=4):
     for url in urls:
         queue.put(url)
 
-    for i in range(numthreads):
+    for _ in range(numthreads):
         t = DownloadThread(queue, destfolder)
         t.start()
 
