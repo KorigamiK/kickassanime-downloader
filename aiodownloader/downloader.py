@@ -11,7 +11,11 @@ from typing import Optional, List
 
 import aiohttp
 import aiofiles
-from . import utils
+
+if __name__ == '__main__':
+    import utils
+else:
+    from . import utils
 
 logger = logging.getLogger('aiodownloader')
 
@@ -160,9 +164,15 @@ class Handler:
         return [task.result() for task in tasks]
 
 if __name__ == '__main__':
+    import os
     async def downlaod_async():
-        downloader = Handler(sync=False)
-        await downloader.download('http://beta.betaplayer.life/static/The%20Promised%20Neverland%20Season%202/The%20Promised%20Neverland%20Season%202%20-%20Episode%2001%20-%20English%20Subbed-360p-encoded.mp4', 'https://beta.betaplayer.life/static/Fire Force Season 2/Sub/Fire Force Season 2 - Episode 20 - English Subbed-240p-encoded.mp4')
-
+        async with aiohttp.ClientSession() as sess:
+            link = "https://github.com/julionav/aiodownloader/raw/master/giphy.gif"
+            name = "yes_thank_you.gif"
+            job = DownloadJob(sess, link, name, os.getcwd())
+            tasks = [asyncio.ensure_future(job.download())]
+            await utils.progress_bar(job)
+            await asyncio.gather(*tasks)
+            
     loop = asyncio.get_event_loop()
     loop.run_until_complete(downlaod_async())

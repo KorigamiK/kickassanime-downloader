@@ -6,7 +6,8 @@ from aiohttp import ClientSession
 from anime_pace_scraperasdf import scraper
 import os
 from aiodownloader import downloader, utils
-
+from typing import Tuple
+from base64 import b64decode
 
 class kickass:
     def __init__(
@@ -44,7 +45,7 @@ class kickass:
         return ("https://www2.kickassanime.rs" + i["slug"] for i in results)
 
     async def get_embeds(self, episode_link=None) -> dict:
-        """ player, download, ep_num, ext_servers """
+        """ player, download, ep_num, ext_servers, episode_countdown """
         if episode_link == None:
             if self.episode_link == None:
                 raise Exception("no url supplied")
@@ -75,6 +76,7 @@ class kickass:
             "download": None,
             "ext_servers": None,
             "can_download": True,
+            "episode_countdown": False,
         }
         for i in result:
             if "mobile2" in i.split("/"):
@@ -93,8 +95,14 @@ class kickass:
         if ret["download"] != None:
             ret["download"] = await self.get_servers(ret["download"])
         else:
-            i["can_download"] = False
+            ret["can_download"] = False
         ret["ep_num"] = episode_num
+
+        if 'countdown' in ret["player"][0]:
+            ret['episode_countdown'] = True
+        else:
+            pass
+
         return ret
 
     async def get_servers(self, dow_link):
@@ -148,32 +156,54 @@ class kickass:
         # print(file_name)
         return (a.final_dow_urls[0].replace(" ", "%20"), file_name)
 
-    async def get_from_player(self, player: list) -> str:
-        print("not implemented yet")
-        return
+    async def get_from_player(self, player_links: list, episode_number: int) -> str:
+        a = player(self.session)
+        print(f'writing episode {episode_number}\n')
+        flag = False
+        if len(player_links) > 1:
+            print(f'number of player links is {len(player_links)}')
+            flag = True
+        else:
+            pass
+
+        with open('episodes.txt', 'a+') as f:
+            f.write(f'{self.name} episode {episode_number}\n')
+            for i,j in await a.get_player_embeds(player_links[0]):
+                # await a.get_from_server(j)
+                f.write(f"\t{i}: {j}\n")
+                if flag == True:
+                    for i in player_links[1:]:
+                        f.write(f'\t{i}\n')
+                else:
+                    pass
+        return f'done episode {episode_number}'
 
 
-class player(kickass):
-    def __init__(self):
-        pass
+class player():
+    def __init__(self, session):
+        self.session = session
 
     @staticmethod
-    def _get_from_script(script):
+    async def _get_from_script(script):
         a = re.findall(r"\{.+\}", str(script))[0]
         return json.loads(f"[{a}]")
 
-    async def get_player_embeds(self, player_link):
-        import requests
-        from bs4 import BeautifulSoup as bs
-
-        request = requests.session()
-        soup = bs(request.get(player_link).text, "html.parser")
+    async def get_player_embeds(self, player_link: str) -> Tuple['name', 'link'] :
+        soup = await fetch(player_link, self.session)
         for i in soup.find_all("script"):
             if "var" in str(i):
-                result = player._get_from_script(i)
+                result = await player._get_from_script(i)
                 break
         return ((i["name"], i["src"]) for i in result)
 
+    async def get_from_server(self, server_link):
+        soup = await fetch(server_link, self.session)
+        for i in soup.find_all('script'):
+            x = str(i)
+            if "document.write" in x and len(x) > 783:
+                link = b64decode(re.search(r'\.decode\("(.+)"\)', str(i)).group(1))
+                break
+        return link
 
 if __name__ == "__main__":
 
@@ -181,42 +211,49 @@ if __name__ == "__main__":
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     async def main():
-        link = "https://www2.kickassanime.rs/anime/cells-at-work-code-black-335844/episode-01-553373"
+        link = "https://www2.kickassanime.rs/anime/one-piece-779470/episode-957-443972"
         async with ClientSession() as sess:
             var = kickass(sess, link)
             print(var.name)
             tasks = []
-            async for i in var.get_episodes_embeds_range(1):
+            async for i in var.get_episodes_embeds_range(700, 702):
                 tasks.append(i)
             embed_result = await asyncio.gather(*tasks)
 
-            tasks_2 = []
+            download_tasks = []
+            player_tasks = []
             for i in embed_result:
                 print(f"Starting episode {i['ep_num']}")
-                print(f"available ext servers are i['ext_servers']")
-                if i["can_download"]:
-                    tasks_2.append(var.get_download(i["download"], i["ep_num"]))
+                print(f"available ext servers are {i['ext_servers']}")
+                if i["episode_countdown"] == True:
+                    print(f'episode {i["ep_num"]} is still in countdown')
+                    continue
+                elif i["can_download"]:
+                    download_tasks.append(var.get_download(i["download"], i["ep_num"]))
                 else:
-                    tasks_2.append(var.get_from_player(i["player"]))
-            links_and_names = await asyncio.gather(*tasks_2)
+                    player_tasks.append(var.get_from_player(i["player"], i['ep_num']))
+
+            links_and_names = await asyncio.gather(*download_tasks)
 
             def dow_maker(url, name):
                 return downloader.DownloadJob(sess, url, name, os.getcwd())
 
-            if input("download now y/n?: ") == "y":
-                print("starting all downloads \nPlease Wait.....")
-                jobs = [dow_maker(*i) for i in links_and_names]
-                tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
-                await utils.multi_progress_bar(jobs)
-                await asyncio.gather(*tasks_3)
-                return None
+            if input("\ndownload now y/n?: ") == "y":
+                if len(links_and_names) != 0:
+                    print("starting all downloads \nPlease Wait.....")
+                    jobs = [dow_maker(*i) for i in links_and_names]
+                    tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
+                    await utils.multi_progress_bar(jobs)
+                    await asyncio.gather(*tasks_3)
+                else:
+                    print('Nothing to download')
+    
             else:
                 print(links_and_names)
-                return None
+
+            to_play = await asyncio.gather(*player_tasks)
+            for i in to_play:
+                print(i)
 
     asyncio.get_event_loop().run_until_complete(main())
-    print("\n\nOMEDETO !!")
-    # p = 'https://kaa-play.com/dust/player.php?link=lMPAFDFNWf9Bx5XWn@LhO@YLW@9Yf5A0V71PhAAfaBs9nxid3Y3vlRNEHYJM514CxhjcXIctd57Gga8t2KOdvFrlI3CLvcnxeLgWUrDQ7agyuqHLJPizr8q99qN9j@VOFa7kTxYGZjlLi3e9uFe55/gDiREKw1o0anUU5cMAz42lXswNCw4V9AjJXAF5CJSiVJ2mFiJhDXpBZEV3Xj92kgAEo3TgCHdaQ0aZjRmIPmJemX1b&link2=lMPAFDFNWf9Bx5XWn@LhO@YLW@9Yf5A0V71PhAAfaBs9nxid3Y3vlRNEHYJM514CxhjcXIctd57Gga8t2KOdvFrlI3CLvcnxeLgWUrDQ7agyuqHLJPizr8q99qN9j@VOFa7kTxYGZjlLi3e9uFe55/gDiREKw1o0anUU5cMAz42lXswNCw4V9AjJXAF5CJSiVJ2mFiJhDXpBZEV3Xj92kgAEo3TgCHdaQ0aZjRmIPmJemX1b&link3=&link4=&link5=&link6=&link7=&link8=&link9=&link10=&link11='
-    # a = player()
-    # for i,j in a.get_player_embeds(p):
-    #     print(i, j)
+    print("\nOMEDETO !!")
