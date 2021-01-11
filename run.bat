@@ -1,2 +1,2 @@
-python kickassanime_scraper.py
+python automatic_checker.py
 PAUSE

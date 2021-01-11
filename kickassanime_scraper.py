@@ -1,9 +1,9 @@
 import re
 import json
 import asyncio
-from async_web import fetch
+from utilities.async_web import fetch
 from aiohttp import ClientSession
-from anime_pace_scraperasdf import scraper
+from utilities.anime_pace_scraperasdf import scraper
 import os
 from aiodownloader import downloader, utils
 from typing import Tuple
@@ -113,6 +113,8 @@ class kickass:
             return (None, None)
 
     async def get_episodes_embeds_range(self, start=0, end=None):
+        if start == None:
+            start = 0
         gen = await self.scrape_episodes()
         ed = end or self.last_episode
         if end != None:
@@ -167,7 +169,7 @@ class kickass:
             pass
 
         with open('episodes.txt', 'a+') as f:
-            f.write(f'{self.name} episode {episode_number}\n')
+            f.write(f'{self.name} episode {episode_number}: \n')
             for i,j in await a.get_player_embeds(player_links[0]):
                 # await a.get_from_server(j)
                 f.write(f"\t{i}: {j}\n")
@@ -205,55 +207,69 @@ class player():
                 break
         return link
 
-if __name__ == "__main__":
+async def automate_scraping(link, start_episode = None, end_episode = None, automatic_downloads = False):
+    async with ClientSession() as sess:
+        var = kickass(sess, link)
+        print(var.name)
+        tasks = []
+        async for i in var.get_episodes_embeds_range(start_episode, end_episode):
+            tasks.append(i)
+        embed_result = await asyncio.gather(*tasks)
 
+        download_tasks = []
+        player_tasks = []
+        for i in embed_result:
+            print(f"Starting episode {i['ep_num']}")
+            if i['ext_servers'] != None:
+                print(f"available ext servers are {i['ext_servers']}")
+            if i["episode_countdown"] == True:
+                print(f'episode {i["ep_num"]} is still in countdown')
+                continue
+            elif i["can_download"]:
+                download_tasks.append(var.get_download(i["download"], i["ep_num"]))
+            else:
+                player_tasks.append(var.get_from_player(i["player"], i['ep_num']))
+
+        links_and_names = await asyncio.gather(*download_tasks)
+
+        def dow_maker(url, name):
+            return downloader.DownloadJob(sess, url, name, os.getcwd())
+        
+        def write_links(links_list):
+            with open('episodes.txt', 'a+') as f:
+                for i in links_list:
+                    l, n = i
+                    f.write(f'{n}: {l} \n')
+
+        if automatic_downloads:
+            ans = 'y'
+        else:
+            ans = input("\ndownload now y/n?: ")    
+
+        if ans == "y":
+            if len(links_and_names) != 0:
+                print(f"starting all downloads for {var.name} \nPlease Wait.....")
+                jobs = [dow_maker(*i) for i in links_and_names]
+                tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
+                await utils.multi_progress_bar(jobs)
+                await asyncio.gather(*tasks_3)
+            else:
+                print('Nothing to download')
+
+        else:
+            write_links(links_and_names)
+
+        to_play = await asyncio.gather(*player_tasks)
+        for i in to_play:
+            print(i)
+        
+        if len(links_and_names) == 0:
+            return None
+        else:
+            return links_and_names[0][1]
+if __name__ == "__main__":
     # import uvloop
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-
-    async def main():
-        link = "https://www2.kickassanime.rs/anime/one-piece-779470/episode-957-443972"
-        async with ClientSession() as sess:
-            var = kickass(sess, link)
-            print(var.name)
-            tasks = []
-            async for i in var.get_episodes_embeds_range(700, 702):
-                tasks.append(i)
-            embed_result = await asyncio.gather(*tasks)
-
-            download_tasks = []
-            player_tasks = []
-            for i in embed_result:
-                print(f"Starting episode {i['ep_num']}")
-                print(f"available ext servers are {i['ext_servers']}")
-                if i["episode_countdown"] == True:
-                    print(f'episode {i["ep_num"]} is still in countdown')
-                    continue
-                elif i["can_download"]:
-                    download_tasks.append(var.get_download(i["download"], i["ep_num"]))
-                else:
-                    player_tasks.append(var.get_from_player(i["player"], i['ep_num']))
-
-            links_and_names = await asyncio.gather(*download_tasks)
-
-            def dow_maker(url, name):
-                return downloader.DownloadJob(sess, url, name, os.getcwd())
-
-            if input("\ndownload now y/n?: ") == "y":
-                if len(links_and_names) != 0:
-                    print("starting all downloads \nPlease Wait.....")
-                    jobs = [dow_maker(*i) for i in links_and_names]
-                    tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
-                    await utils.multi_progress_bar(jobs)
-                    await asyncio.gather(*tasks_3)
-                else:
-                    print('Nothing to download')
-    
-            else:
-                print(links_and_names)
-
-            to_play = await asyncio.gather(*player_tasks)
-            for i in to_play:
-                print(i)
-
-    asyncio.get_event_loop().run_until_complete(main())
+    link = "https://www2.kickassanime.rs/anime/shingeki-no-kyojin-the-final-season-615098/episode-05-862035"
+    asyncio.get_event_loop().run_until_complete(automate_scraping(link, 5, None))
     print("\nOMEDETO !!")
