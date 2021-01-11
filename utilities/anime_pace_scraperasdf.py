@@ -184,7 +184,10 @@ class scraper:
             for j, i in enumerate(links):
                 print(j, i[0])
             self.quality = int(input("Enter quality number: "))
-        self.final_dow_urls += [links[self.quality][1]]
+        try:
+            self.final_dow_urls += [links[self.quality][1]]
+        except IndexError:
+            return None
         self.options += [
             f"-O {(self.name + ' ' + self.episode + '.mp4').replace(' ', '_')}"
         ]

@@ -147,7 +147,7 @@ class kickass:
         flag = 999
         final = None
         for i in available:
-            if list(priority.keys()).index(i[0]) < flag:
+            if list(priority.keys()).index(i[0]) <= flag:
                 flag = list(priority.keys()).index(i[0])
                 final = i
         print(final[0])
@@ -156,7 +156,11 @@ class kickass:
         a.get_final_links(final[1])
         file_name = f"{self.name} ep_{episode_number:02d}.mp4"
         # print(file_name)
-        return (a.final_dow_urls[0].replace(" ", "%20"), file_name)
+        if len(a.final_dow_urls) != 0:
+            return (a.final_dow_urls[0].replace(" ", "%20"), file_name)
+        else:
+            print(f'cannot download {episode_number}')
+            return (None, None)
 
     async def get_from_player(self, player_links: list, episode_number: int) -> str:
         a = player(self.session)
@@ -249,7 +253,7 @@ async def automate_scraping(link, start_episode = None, end_episode = None, auto
         if ans == "y":
             if len(links_and_names) != 0:
                 print(f"starting all downloads for {var.name} \nPlease Wait.....")
-                jobs = [dow_maker(*i) for i in links_and_names]
+                jobs = [dow_maker(*i) for i in links_and_names if None not in i]
                 tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
                 await utils.multi_progress_bar(jobs)
                 await asyncio.gather(*tasks_3)
@@ -270,6 +274,6 @@ async def automate_scraping(link, start_episode = None, end_episode = None, auto
 if __name__ == "__main__":
     # import uvloop
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    link = "https://www2.kickassanime.rs/anime/shingeki-no-kyojin-the-final-season-615098/episode-05-862035"
-    asyncio.get_event_loop().run_until_complete(automate_scraping(link, 5, None))
+    link = "https://www2.kickassanime.rs/anime/saiki-kusuo-no-nan-2-160465"
+    asyncio.get_event_loop().run_until_complete(automate_scraping(link))
     print("\nOMEDETO !!")
