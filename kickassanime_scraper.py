@@ -230,7 +230,7 @@ class player:
 
 
 async def automate_scraping(
-    link, start_episode=None, end_episode=None, automatic_downloads=False
+    link, start_episode=None, end_episode=None, automatic_downloads=False, download_location=os.getcwd()
 ):
     async with ClientSession() as sess:
         var = kickass(sess, link)
@@ -257,7 +257,7 @@ async def automate_scraping(
         links_and_names = await asyncio.gather(*download_tasks)
 
         def dow_maker(url, name):
-            return downloader.DownloadJob(sess, url, name, os.getcwd())
+            return downloader.DownloadJob(sess, url, name, download_location)
 
         def write_links(links_list):
             with open("episodes.txt", "a+") as f:
@@ -298,8 +298,8 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    # import uvloop
-    # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    import uvloop
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     link = (
         "https://www2.kickassanime.rs/anime/tokyo-godfathers-485925/episode-01-603407"
     )
