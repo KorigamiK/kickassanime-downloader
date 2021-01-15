@@ -12,13 +12,14 @@ if False:
 
 def pretty_tqdm(size: int, name: str):
     """Returns a tqdm pbar with some predefined options"""
-    return tqdm(total=size, desc=name, unit_scale=True, unit='B')
+    return tqdm(total=size, desc=name, unit_scale=True, unit="B")
 
-async def progress_bar(job: 'downloader.DownloadJob') -> None:
+
+async def progress_bar(job: "downloader.DownloadJob") -> None:
     """
     Creates a tqdm progress bar for the given job. Updating it asynchronously every half a sec
     according to how much the job has advanced since the last update.
-    
+
     :param job: download job that will have a progress bar
     """
     job_size = await job.get_size()
@@ -31,19 +32,22 @@ async def progress_bar(job: 'downloader.DownloadJob') -> None:
         last_progress = copy.copy(job.progress)
         await asyncio.sleep(0.5)
 
-async def multi_progress_bar(jobs: List['downloader.DownloadJob']) -> None:
+
+async def multi_progress_bar(jobs: List["downloader.DownloadJob"]) -> None:
     """
-    Creates one tqdm progress bar for every download job and updates all of them asynchronously 
+    Creates one tqdm progress bar for every download job and updates all of them asynchronously
     every sec according to how much the job has advanced since the last update.
 
-    :param jobs: list of download jobs that will have a progress bar 
-    :return: 
+    :param jobs: list of download jobs that will have a progress bar
+    :return:
     """
     # Getting the job sizes to create the tqdm pbars
     jobs_done, _ = await asyncio.wait([job.get_size() for job in jobs])
     job_sizes = [done.result() for done in jobs_done]
 
-    pbars = [pretty_tqdm(job_size, job.file_name) for job_size, job in zip(job_sizes, jobs)]
+    pbars = [
+        pretty_tqdm(job_size, job.file_name) for job_size, job in zip(job_sizes, jobs)
+    ]
 
     # List to store the last seen progress from the jobs.
     last_progresses = [0] * len(jobs)
@@ -64,13 +68,15 @@ async def multi_progress_bar(jobs: List['downloader.DownloadJob']) -> None:
         await asyncio.sleep(0.5)
 
 
-def make_sync(couroutine: [Coroutine, asyncio.Future], loop: Optional[asyncio.BaseEventLoop]):
+def make_sync(
+    couroutine: [Coroutine, asyncio.Future], loop: Optional[asyncio.BaseEventLoop]
+):
     """
-    Wraps a couroutine to work synchronously. 
-    
+    Wraps a couroutine to work synchronously.
+
     :param couroutine: the coroutine to be wrapped
     :param loop: A asyncio event loop
-    :return: 
+    :return:
     """
     loop = loop or asyncio.get_event_loop()
 
@@ -79,10 +85,3 @@ def make_sync(couroutine: [Coroutine, asyncio.Future], loop: Optional[asyncio.Ba
         return loop.run_until_complete(couroutine(*args, **kwargs))
 
     return wrapper
-
-
-
-
-
-
-

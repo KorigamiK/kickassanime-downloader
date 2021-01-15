@@ -12,37 +12,41 @@ from typing import Optional, List
 import aiohttp
 import aiofiles
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import utils
 else:
     from . import utils
 
-logger = logging.getLogger('aiodownloader')
+logger = logging.getLogger("aiodownloader")
 
 
 class DownloadJob:
     """
     Download Job
-    
+
     :param file_url: url where the file is located
     :param session: aiohttp session to be used on the job
     :param file_name: name to be used on the file. Defaults to the last part of the url
     :param save_path: dir where the file should be saved. Defaults to the current dir
     """
 
-    def __init__(self,
-                 session: aiohttp.ClientSession,
-                 file_url: str,
-                 file_name: Optional[str] = None,
-                 save_path: Optional[str] = None,
-                 chunk_size: Optional[int] = 1024):
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        file_url: str,
+        file_name: Optional[str] = None,
+        save_path: Optional[str] = None,
+        chunk_size: Optional[int] = 1024,
+    ):
 
         self.file_url = file_url
         self._session = session
         self._chunk_size = chunk_size
 
-        self.file_name = file_name if file_name != None else file_url.split('/')[~0]
-        self.file_path = os.path.join(save_path, self.file_name) if save_path else self.file_name
+        self.file_name = file_name if file_name != None else file_url.split("/")[~0]
+        self.file_path = (
+            os.path.join(save_path, self.file_name) if save_path else self.file_name
+        )
 
         self.completed = False
         self.progress = 0
@@ -56,12 +60,13 @@ class DownloadJob:
         if not self.size:
             async with self._session.get(self.file_url) as resp:
                 if 200 <= resp.status < 300:
-                    self.size = int(resp.headers['Content-Length'])
+                    self.size = int(resp.headers["Content-Length"])
 
                 else:
                     raise Exception(
-                        message=f'There was a problem processing {self.file_url}',
-                        code=resp.status)
+                        message=f"There was a problem processing {self.file_url}",
+                        code=resp.status,
+                    )
 
         return self.size
 
@@ -82,7 +87,7 @@ class DownloadJob:
             # Checkning the response code
             if 200 <= resp.status < 300:
                 # Saving the data to the file chunk by chunk.
-                async with aiofiles.open(self.file_path, 'wb') as file:
+                async with aiofiles.open(self.file_path, "wb") as file:
 
                     # Downloading the file using the aiohttp.StreamReader
                     async for data in resp.content.iter_chunked(self._chunk_size):
@@ -94,24 +99,28 @@ class DownloadJob:
 
             else:
                 raise Exception(
-                    message=f'There was a problem processing {self.file_url}', code=resp.status)
+                    message=f"There was a problem processing {self.file_url}",
+                    code=resp.status,
+                )
 
 
 class Handler:
     """
     Top level interface with the downloader. It creates the download jobs and handles them.
-    
+
     :param loop: asyncio loop. if not provided asyncio.get_event_loop() will be used
-    :param session: aiohttp session to be used on all downloads. If not provided it will be 
-    created 
-    :param chunk_size: chunk bytes sizes to get from the file source. Defaults to 1024 bytes 
+    :param session: aiohttp session to be used on all downloads. If not provided it will be
+    created
+    :param chunk_size: chunk bytes sizes to get from the file source. Defaults to 1024 bytes
     """
 
-    def __init__(self,
-                 sync: Optional[bool]=True,
-                 loop: Optional[asyncio.BaseEventLoop]=None,
-                 session: Optional[aiohttp.ClientSession]=None,
-                 chunk_size: Optional[int] = 1024):
+    def __init__(
+        self,
+        sync: Optional[bool] = True,
+        loop: Optional[asyncio.BaseEventLoop] = None,
+        session: Optional[aiohttp.ClientSession] = None,
+        chunk_size: Optional[int] = 1024,
+    ):
 
         self._loop = loop or asyncio.get_event_loop()
         self._session = session or aiohttp.ClientSession(loop=self._loop)
@@ -121,50 +130,54 @@ class Handler:
         if sync:
             self.download = utils.make_sync(self.download, self._loop)
 
-    def _job_factory(self,
-                     file_url: str,
-                     save_path: Optional[str] = None) -> DownloadJob:
+    def _job_factory(
+        self, file_url: str, save_path: Optional[str] = None
+    ) -> DownloadJob:
         """
         Shortcut for creating a download job. It adds the session and the chunk size.
         :param file_url: url where the file is located
         :param save_path: save path for the download
-        :return: 
+        :return:
         """
 
         return DownloadJob(self._session, file_url, None, save_path, self._chunk_size)
 
-    async def download(self,
-                       *files_url: str,
-                       save_path: Optional[str]=None,
-                       progress_bar: Optional[bool]=True) -> List[DownloadJob]:
+    async def download(
+        self,
+        *files_url: str,
+        save_path: Optional[str] = None,
+        progress_bar: Optional[bool] = True,
+    ) -> List[DownloadJob]:
         """
         Downloads a bulk of files from the given list of urls to the given path.
-        
+
         :param files_url: list of urls where the files are located
         :param save_path: path to be used for saving the files. Defaults to the current dir
         :param progress_bar: if true a progress bar will be show for every download job
-        :return: the future for the 
+        :return: the future for the
         """
 
-        logger.info(f'Starting download of: {files_url}')
+        logger.info(f"Starting download of: {files_url}")
 
-        logger.debug('Creating jobs')
+        logger.debug("Creating jobs")
         jobs = [self._job_factory(url, save_path=save_path) for url in files_url]
 
-        logger.debug('Creating asyncio tasks')
+        logger.debug("Creating asyncio tasks")
         tasks = [asyncio.ensure_future(job.download()) for job in jobs]
 
         if progress_bar:
-            logger.debug('Starting progress bar')
+            logger.debug("Starting progress bar")
             await utils.multi_progress_bar(jobs)
 
         await asyncio.gather(*tasks)
 
-        logger.info('The download has been completed')
+        logger.info("The download has been completed")
         return [task.result() for task in tasks]
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import os
+
     async def downlaod_async():
         async with aiohttp.ClientSession() as sess:
             link = "https://github.com/julionav/aiodownloader/raw/master/giphy.gif"
@@ -173,6 +186,6 @@ if __name__ == '__main__':
             tasks = [asyncio.ensure_future(job.download())]
             await utils.progress_bar(job)
             await asyncio.gather(*tasks)
-            
+
     loop = asyncio.get_event_loop()
     loop.run_until_complete(downlaod_async())

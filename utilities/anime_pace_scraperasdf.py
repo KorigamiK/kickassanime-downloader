@@ -203,7 +203,7 @@ class scraper:
             except:
                 print(f"bad serverlink {link}")
                 return
-            
+
         self.server = server
         if server == "KickAssAnimeX":
             scraper._kickassanimex(self, link)
@@ -251,7 +251,7 @@ class scraper:
 
     @staticmethod
     def download(link, options):
-#         query = f"""wget "{link}" -q --show-progress --no-check-certificate {options}"""
+        #         query = f"""wget "{link}" -q --show-progress --no-check-certificate {options}"""
         query = f"""wget "{link}" --no-check-certificate {options}"""
 
         subprocess.run(query, shell=True)
@@ -280,7 +280,7 @@ class downloader:
             "BetaServer3": 2,
             "mobile-v2": -1,
             "html5": -1,
-            "a-kickassanime": -1,            
+            "a-kickassanime": -1,
             "Theta-Original": -1,
         }
     }
@@ -355,7 +355,7 @@ class downloader:
                     var.get_final_links(needed_server)
                     continue
                 except:
-                    print('found bad server. trying another one...')
+                    print("found bad server. trying another one...")
                     var.quality = -1
                     serverlinks.remove(needed_server)
                     var.get_final_links(serverlinks[-1])
@@ -428,7 +428,7 @@ if __name__ == "__main__":
         #     print(a.options)
         #     print(a.final_dow_urls)
         downloader.csv_updater(a.final_dow_urls, a.options)
-        if input('download now y/n? :') == 'y':
+        if input("download now y/n? :") == "y":
             for url, opt in zip(a.final_dow_urls, a.options):
                 scraper.download(url, opt)
         else:
@@ -445,5 +445,3 @@ if __name__ == "__main__":
         search_and_get.download_from_search()
     else:
         print("not implemented yet.")
-
-
