@@ -1,0 +1,7 @@
+__pycache__
+*.mp4
+*.bak
+.vscode
+bad
+episodes.txt
+to_update.json

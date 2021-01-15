@@ -17,10 +17,12 @@ async def main():
         )
 
     new_starts = await asyncio.gather(*tasks)
+    index = -1
     for j, i in new_starts:
+        index += 1
         if i != None:
             new = int(re.search(r"ep_(\d+)", i).group(1)) + 1
-            needed[list(needed.keys())[j]] = new
+            needed[list(needed.keys())[index]] = new
         else:
             print(f"\nlatest for {j}")
             continue
