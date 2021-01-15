@@ -9,6 +9,9 @@ from aiodownloader import downloader, utils
 from typing import Tuple
 from base64 import b64decode
 
+with open("config.json") as file:
+    priority = json.loads(file.read())
+    
 class kickass:
     def __init__(
         self,
@@ -117,11 +120,14 @@ class kickass:
             start = 0
         gen = await self.scrape_episodes()
         ed = end or self.last_episode
+        x = 0
         if end != None:
-            for i, _ in enumerate(gen):
-                if i != self.last_episode - ed - 1:
+            for _ in gen:
+                if x != self.last_episode - ed - 1:
+                    x += 1
                     pass
                 else:
+                    x += 1
                     break
         else:
             pass
@@ -133,9 +139,8 @@ class kickass:
                 yield self.get_embeds(i)
 
     async def get_download(self, download_links: tuple, episode_number: int) -> tuple:
-        """ returns tuple like (link, file_name)"""
-        with open("config.json") as file:
-            priority = json.loads(file.read())
+        """ returns tuple like (link, file_name)
+            :download_links: are the available server links"""
         available = []
         # print(type(priority))
         for i in download_links:
@@ -191,15 +196,26 @@ class player():
 
     @staticmethod
     async def _get_from_script(script):
-        a = re.findall(r"\{.+\}", str(script))[0]
-        return json.loads(f"[{a}]")
-
+        try:
+            a = re.findall(r"\{.+\}", str(script))[0]
+            return json.loads(f"[{a}]")
+        except:
+            print('invalid player url supplied')
+            return None
+        
     async def get_player_embeds(self, player_link: str) -> Tuple['name', 'link'] :
         soup = await fetch(player_link, self.session)
         for i in soup.find_all("script"):
             if "var" in str(i):
-                result = await player._get_from_script(i)
-                break
+                data = await player._get_from_script(i)
+                if data:
+                    result = data
+                    break
+                else:
+                    continue
+        else:
+            print('Player link error')
+            return [(None, None)]
         return ((i["name"], i["src"]) for i in result)
 
     async def get_from_server(self, server_link):
@@ -255,8 +271,12 @@ async def automate_scraping(link, start_episode = None, end_episode = None, auto
                 print(f"starting all downloads for {var.name} \nPlease Wait.....")
                 jobs = [dow_maker(*i) for i in links_and_names if None not in i]
                 tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
-                await utils.multi_progress_bar(jobs)
-                await asyncio.gather(*tasks_3)
+                if len(jobs) != 0:
+                    await utils.multi_progress_bar(jobs)
+                    await asyncio.gather(*tasks_3, return_exceptions=True)
+                else:
+                    print('Nothing to download')
+
             else:
                 print('Nothing to download')
 
@@ -268,12 +288,12 @@ async def automate_scraping(link, start_episode = None, end_episode = None, auto
             print(i)
         
         if len(links_and_names) == 0:
-            return None
+            return (var.name, None)
         else:
-            return links_and_names[0][1]
+            return (var.name, links_and_names[0][1])
 if __name__ == "__main__":
     # import uvloop
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    link = "https://www2.kickassanime.rs/anime/saiki-kusuo-no-nan-2-160465"
+    link = "https://www2.kickassanime.rs/anime/tokyo-godfathers-485925/episode-01-603407"
     asyncio.get_event_loop().run_until_complete(automate_scraping(link))
     print("\nOMEDETO !!")

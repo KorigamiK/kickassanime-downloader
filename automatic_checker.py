@@ -12,7 +12,7 @@ async def main():
         tasks.append(automate_scraping(link, start_episode=start, end_episode=None, automatic_downloads=True))
 
     new_starts = await asyncio.gather(*tasks)
-    for j, i in enumerate(new_starts):
+    for j, i in new_starts:
         if i != None:
             new = int(re.search(r'ep_(\d+)', i).group(1)) + 1
             needed[list(needed.keys())[j]] = new
