@@ -4,6 +4,7 @@ import base64
 import subprocess
 import re
 import csv
+import asyncio
 
 # import os # will add ability to set download location
 from tabulate import tabulate
@@ -192,7 +193,7 @@ class scraper:
             f"-O {(self.name + ' ' + self.episode + '.mp4').replace(' ', '_')}"
         ]
 
-    def get_final_links(self, link):  # link here is for server
+    async def get_final_links(self, link):  # link here is for server
         print(link)
         try:
             server = link.split("https://haloani.ru")[1].split("/")[1]
@@ -285,7 +286,7 @@ class downloader:
         }
     }
 
-    def make_downloads(self):
+    async def make_downloads(self):
         priority_list = list(downloader.priority[self.mode].keys())
         var = scraper(self.anime_url + "episode-04")
         var.server_opt = "downloader"
@@ -344,7 +345,7 @@ class downloader:
                 except:
                     print(re.search(pattern2, needed_server).group(2))
 
-                var.get_final_links(needed_server)
+                await var.get_final_links(needed_server)
             except Exception as e:
                 try:
                     print(
@@ -352,13 +353,13 @@ class downloader:
                     )
                     print()
                     var.quality = -1
-                    var.get_final_links(needed_server)
+                    await var.get_final_links(needed_server)
                     continue
                 except:
                     print("found bad server. trying another one...")
                     var.quality = -1
                     serverlinks.remove(needed_server)
-                    var.get_final_links(serverlinks[-1])
+                    await var.get_final_links(serverlinks[-1])
                     continue
             print()
         downloader.csv_updater(var.final_dow_urls, var.options)
@@ -392,13 +393,13 @@ class searcher:
         self.url = f"https://www3.animepace.si/anime/{links[inp]}/"
         return self.url
 
-    def download_from_search(self):
+    async def download_from_search(self):
         var = downloader(
             self.print_search(),
             int(input("Enter start number: ")),
             int(input("Enter end number: ")),
         )
-        downloader.make_downloads(var)
+        await downloader.make_downloads(var)
 
 
 if __name__ == "__main__":
@@ -423,7 +424,7 @@ if __name__ == "__main__":
                 print(a.orig_url)
                 serverlink = a.get_server_link()
                 #             print(serverlink)
-                a.get_final_links(serverlink)
+                asyncio.run(a.get_final_links(serverlink))
         #     print(list(zip(a.final_dow_urls, a.options)))
         #     print(a.options)
         #     print(a.final_dow_urls)
@@ -439,9 +440,9 @@ if __name__ == "__main__":
             int(input("Enter start number: ")),
             int(input("Enter end number: ")),
         )
-        downloader.make_downloads(a)
+        asyncio.run(downloader.make_downloads(a))
     elif option_input == 3:
         search_and_get = searcher(input("Enter anime name: "))
-        search_and_get.download_from_search()
+        asyncio.run(search_and_get.download_from_search())
     else:
         print("not implemented yet.")

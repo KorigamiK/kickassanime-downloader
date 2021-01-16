@@ -12,7 +12,11 @@ async def main():
     for link, start in needed.items():
         tasks.append(
             automate_scraping(
-                link, start_episode=start, end_episode=None, automatic_downloads=True, download_location='/home/origami/Videos/'
+                link,
+                start_episode=start,
+                end_episode=None,
+                automatic_downloads=True,
+                download_location="/home/origami/Videos/",
             )
         )
 

@@ -159,7 +159,7 @@ class kickass:
         print(final[0])
         a = scraper(self.base_url)
         a.quality = priority[final[0]]
-        a.get_final_links(final[1])
+        await a.get_final_links(final[1])
         file_name = f"{self.name} ep_{episode_number:02d}.mp4"
         # print(file_name)
         if len(a.final_dow_urls) != 0:
@@ -230,7 +230,11 @@ class player:
 
 
 async def automate_scraping(
-    link, start_episode=None, end_episode=None, automatic_downloads=False, download_location=os.getcwd()
+    link,
+    start_episode=None,
+    end_episode=None,
+    automatic_downloads=False,
+    download_location=os.getcwd(),
 ):
     async with ClientSession() as sess:
         var = kickass(sess, link)
@@ -299,9 +303,8 @@ async def automate_scraping(
 
 if __name__ == "__main__":
     import uvloop
+
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    link = (
-        "https://www2.kickassanime.rs/anime/tokyo-godfathers-485925/episode-01-603407"
-    )
-    asyncio.get_event_loop().run_until_complete(automate_scraping(link))
+    link = "https://www2.kickassanime.rs/anime/saiki-kusuo-no-nan-2-160465"
+    asyncio.get_event_loop().run_until_complete(automate_scraping(link, 12))
     print("\nOMEDETO !!")
