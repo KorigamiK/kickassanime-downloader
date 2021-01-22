@@ -2,6 +2,7 @@ import asyncio
 import json
 from kickassanime_scraper import automate_scraping
 import re
+import traceback
 
 with open("to_update.json") as f:
     needed = json.loads(f.read())
@@ -16,11 +17,14 @@ async def main():
                 start_episode=start,
                 end_episode=None,
                 automatic_downloads=True,
-                download_location="/home/origami/Videos/",
+                download_location="/home/origami/Videos/Anime/",
             )
         )
-
-    new_starts = await asyncio.gather(*tasks)
+    try:
+        new_starts = await asyncio.gather(*tasks)
+    except Exception:
+        new_starts = [(None, None)]
+        print(traceback.format_exc())
     index = -1
     for j, i in new_starts:
         index += 1

@@ -1,3 +1,4 @@
+from typing import List
 import requests
 from bs4 import BeautifulSoup as bs
 import base64
@@ -328,6 +329,7 @@ class downloader:
             else:
                 pass
             flag = 10  # arbitrary large number
+            needed_server: str = None
             for j, i in enumerate(servers):
                 if i in priority_list:
                     print("yes")

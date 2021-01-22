@@ -31,6 +31,7 @@ async def progress_bar(job: "downloader.DownloadJob") -> None:
         # We copy the progress into the last progress.
         last_progress = copy.copy(job.progress)
         await asyncio.sleep(0.5)
+    pbar.close()
 
 
 async def multi_progress_bar(jobs: List["downloader.DownloadJob"]) -> None:
@@ -66,6 +67,8 @@ async def multi_progress_bar(jobs: List["downloader.DownloadJob"]) -> None:
 
         last_progresses = new_progresses
         await asyncio.sleep(0.5)
+        
+    for pbar in pbars: pbar.close()
 
 
 def make_sync(

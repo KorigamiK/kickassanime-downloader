@@ -6,8 +6,9 @@ from aiohttp import ClientSession
 from utilities.anime_pace_scraperasdf import scraper
 import os
 from aiodownloader import downloader, utils
-from typing import Tuple
+from typing import List
 from base64 import b64decode
+from bs4 import BeautifulSoup as bs
 
 with open("config.json") as file:
     priority = json.loads(file.read())
@@ -40,16 +41,22 @@ class kickass:
 
     async def scrape_episodes(self) -> GeneratorExit:
         soup = await fetch(self.base_url, self.session)
+        results = [None]
         for i in soup.find_all("script"):
             if "appUrl" in str(i):
                 data = await kickass._get_data(i)
                 # print(data.keys())
                 results = data["anime"]["episodes"]
-        self.last_episode = int(results[0]["slug"].split("/")[-1].split("-")[1])
+        try:
+            self.last_episode = int(results[0]["slug"].split("/")[-1].split("-")[1])
+        except ValueError:  # for ovas and stuff
+            self.last_episode = 0
+
         return ("https://www2.kickassanime.rs" + i["slug"] for i in results)
 
     async def get_embeds(self, episode_link=None) -> dict:
-        """ player, download, ep_num, ext_servers, episode_countdown """
+        """player, download, ep_num, ext_servers, episode_countdown
+        either pass the download link or set self.episode_link manually"""
         if episode_link == None:
             if self.episode_link == None:
                 raise Exception("no url supplied")
@@ -57,9 +64,15 @@ class kickass:
                 pass
         else:
             self.episode_link = episode_link
-        episode_num = int(self.episode_link.split("/")[-1].split("-")[1])
+
+        try:
+            episode_num = int(self.episode_link.split("/")[-1].split("-")[1])
+        except ValueError:  # for ovas and stuff
+            episode_num = 0
+
         print(f"Getting episode {episode_num}")
         soup = await fetch(self.episode_link, self.session)
+        data: dict[str] = None
         for i in soup.find_all("script"):
             if "appUrl" in str(i):
                 data = await kickass._get_data(i)
@@ -72,7 +85,7 @@ class kickass:
             try:
                 if "http" in i:
                     result.append(i)
-            except TypeError:
+            except TypeError:  # means
                 pass
         # print(result)
         ret = {
@@ -149,6 +162,10 @@ class kickass:
             if i[0] in priority.keys():
                 available.append(i)
         # print(available)
+        if len(available) == 0:
+            print(f"No available server in config.json for episode {episode_number}")
+            return (None, None)
+
         await asyncio.sleep(0)
         flag = 999
         final = None
@@ -188,7 +205,7 @@ class kickass:
                         f.write(f"\t{i}\n")
                 else:
                     pass
-        return f"done episode {episode_number}"
+        return f"No download links for {self.name} episode {episode_number}. Written player links"
 
 
 class player:
@@ -204,7 +221,8 @@ class player:
             print("invalid player url supplied")
             return None
 
-    async def get_player_embeds(self, player_link: str) -> Tuple["name", "link"]:
+    async def get_player_embeds(self, player_link: str) -> List[str]:
+        """ returns list[("name", "link"), ...]"""
         soup = await fetch(player_link, self.session)
         for i in soup.find_all("script"):
             if "var" in str(i):
@@ -217,16 +235,34 @@ class player:
         else:
             print("Player link error")
             return [(None, None)]
-        return ((i["name"], i["src"]) for i in result)
+        res = [self.get_from_server(i["name"], i["src"]) for i in result]
+        return await asyncio.gather(*res)
 
-    async def get_from_server(self, server_link):
-        soup = await fetch(server_link, self.session)
+    async def get_from_server(self, server_name, server_link):
+        """ returns list: [[server_name, link], ...]"""
+        iframe_url = server_link.replace("player.php?", "pref.php?")
+        soup = await fetch(iframe_url, self.session)
+        script_tag: str = ""
         for i in soup.find_all("script"):
             x = str(i)
             if "document.write" in x and len(x) > 783:
-                link = b64decode(re.search(r'\.decode\("(.+)"\)', str(i)).group(1))
+                script_tag = b64decode(
+                    re.search(r'\.decode\("(.+)"\)', str(i)).group(1)
+                )
                 break
-        return link
+
+        if server_name == "PINK-BIRD":
+            return [server_name, bs(script_tag, "html.parser").find("source")["src"]]
+        elif server_name == "SAPPHIRE-DUCK":
+            sap_duck = bs(script_tag, "html.parser")
+            java_script = str(sap_duck.select_one("script"))
+            return [
+                server_name,
+                re.search(r'(http.*)"', java_script).group(1).replace(r"\/", r"/"),
+            ]
+        else:
+            print(f"not implemented server {server_name}")
+            return [None, None]
 
 
 async def automate_scraping(
@@ -283,15 +319,22 @@ async def automate_scraping(
                     await utils.multi_progress_bar(jobs)
                     await asyncio.gather(*tasks_3, return_exceptions=True)
                 else:
-                    print("Nothing to download")
+                    # to avoid too much stdout
+                    if automatic_downloads == False:
+                        print(
+                            "Nothing to download"
+                        )  # when countdown links may give none and non empty links_and_names
 
             else:
-                print("Nothing to download")
+                # to avoid too much stdout
+                if automatic_downloads == False:
+                    print("Nothing to download")
 
         else:
             write_links(links_and_names)
 
         to_play = await asyncio.gather(*player_tasks)
+
         for i in to_play:
             print(i)
 
@@ -305,6 +348,19 @@ if __name__ == "__main__":
     import uvloop
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    link = "https://www2.kickassanime.rs/anime/saiki-kusuo-no-nan-2-160465"
-    asyncio.get_event_loop().run_until_complete(automate_scraping(link, 12))
+    link = "https://www2.kickassanime.rs/anime/dr-stone-stone-wars-802545/episode-02-114680"
+    asyncio.get_event_loop().run_until_complete(automate_scraping(link, 2))
     print("\nOMEDETO !!")
+elif False:
+
+    async def main_test():
+        async with ClientSession() as sess:
+            var = player(sess)
+            f = 1
+            ser = "https://kaa-play.com/dust/player.php?link=lMPAFDFNWf9Bx5XWn@LhO@YLW@9Yf5A0V71PhAAfaBs9nxid3Y3vlRNYUJRauxgN0QGZGKQ0eoPEg70m4enjkQWFP06/yZ/RXKkgWYrt6qUgneW7OcOBk9OJ/LR7s@MUKInqY1VmRzV2gHGxn26ryOZZoVEUsWU3b00q5u1Bm86bCNcBW0lb&link2=lMPAFDFNWf9Bx5XWn@LhO@YLW@9Yf5A0V71PhAAfaBs9nxid3Y3vlRNYUJRauxgN0QGZGKQ0eoPEg70m4enjkQWFP06/yZ/RXKkgWYrt6qUgneW7OcOBk9OJ/LR7s@MUKInqY1VmRzV2gHGxn26ryOZZoVEUsWU3b00q5u1Bm86bCNcBW0lb&link3=&link4=&link5=&link6=&link7=&link8=&link9=&link10=&link11="
+            for i in await var.get_player_embeds(ser):
+                if f == 2:
+                    print(await var.get_from_server(*i), end="\n\n")
+                f += 1
+
+    asyncio.run(main_test())
