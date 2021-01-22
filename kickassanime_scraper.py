@@ -196,7 +196,7 @@ class kickass:
             pass
 
         with open("episodes.txt", "a+") as f:
-            f.write(f"{self.name} episode {episode_number}: \n")
+            f.write(f"\n{self.name} episode {episode_number}: \n")
             for i, j in await a.get_player_embeds(player_links[0]):
                 # await a.get_from_server(j)
                 f.write(f"\t{i}: {j}\n")
@@ -242,27 +242,42 @@ class player:
         """ returns list: [[server_name, link], ...]"""
         iframe_url = server_link.replace("player.php?", "pref.php?")
         soup = await fetch(iframe_url, self.session)
-        script_tag: str = ""
-        for i in soup.find_all("script"):
-            x = str(i)
-            if "document.write" in x and len(x) > 783:
-                script_tag = b64decode(
-                    re.search(r'\.decode\("(.+)"\)', str(i)).group(1)
-                )
-                break
+        def get_script():
+            for i in soup.find_all("script"):
+                x = str(i)
+                if "document.write" in x and len(x) > 783:
+                    return b64decode(
+                        re.search(r'\.decode\("(.+)"\)', str(i)).group(1)
+                    )
 
         if server_name == "PINK-BIRD":
+            script_tag: str = get_script()
             return [server_name, bs(script_tag, "html.parser").find("source")["src"]]
+
         elif server_name == "SAPPHIRE-DUCK":
+            script_tag: str = get_script()
             sap_duck = bs(script_tag, "html.parser")
             java_script = str(sap_duck.select_one("script"))
+
             return [
                 server_name,
                 re.search(r'(http.*)"', java_script).group(1).replace(r"\/", r"/"),
             ]
+        elif server_name == "BETASERVER3":
+            res = ''
+            links_list = []
+            for i in soup.find_all('script'):
+                if 'file' in str(i):
+                    links_list = json.loads(re.findall(r'\[{.*}]', str(i))[0])
+                    break
+            for i in links_list:
+                res += f"\t\t{i['label']}: {i['file']}\n"
+                        
+            return [server_name, res]
+
         else:
-            print(f"not implemented server {server_name}")
-            return [None, None]
+            # print(f"not implemented server {server_name}")
+            return [server_name, server_link]
 
 
 async def automate_scraping(
@@ -271,6 +286,7 @@ async def automate_scraping(
     end_episode=None,
     automatic_downloads=False,
     download_location=os.getcwd(),
+    only_player=False,
 ):
     async with ClientSession() as sess:
         var = kickass(sess, link)
@@ -289,7 +305,7 @@ async def automate_scraping(
             if i["episode_countdown"] == True:
                 print(f'episode {i["ep_num"]} is still in countdown')
                 continue
-            elif i["can_download"]:
+            elif i["can_download"] and not only_player:
                 download_tasks.append(var.get_download(i["download"], i["ep_num"]))
             else:
                 player_tasks.append(var.get_from_player(i["player"], i["ep_num"]))
@@ -302,15 +318,17 @@ async def automate_scraping(
         def write_links(links_list):
             with open("episodes.txt", "a+") as f:
                 for i in links_list:
+                    f.write("\n")
                     l, n = i
                     f.write(f"{n}: {l} \n")
-
+        ans = 'n'
         if automatic_downloads:
             ans = "y"
         else:
-            ans = input("\ndownload now y/n?: ")
+            if not only_player:
+                ans = input("\ndownload now y/n?: ")
 
-        if ans == "y":
+        if ans == "y" and not only_player:
             if len(links_and_names) != 0:
                 print(f"starting all downloads for {var.name} \nPlease Wait.....")
                 jobs = [dow_maker(*i) for i in links_and_names if None not in i]
@@ -331,12 +349,14 @@ async def automate_scraping(
                     print("Nothing to download")
 
         else:
-            write_links(links_and_names)
+            if not only_player:
+                write_links(links_and_names)
 
         to_play = await asyncio.gather(*player_tasks)
 
         for i in to_play:
-            print(i)
+            if not only_player:
+                print(i)
 
         if len(links_and_names) == 0:
             return (var.name, None)
@@ -349,7 +369,7 @@ if __name__ == "__main__":
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     link = "https://www2.kickassanime.rs/anime/dr-stone-stone-wars-802545/episode-02-114680"
-    asyncio.get_event_loop().run_until_complete(automate_scraping(link, 2))
+    asyncio.get_event_loop().run_until_complete(automate_scraping(link, 1, 2, only_player=True))
     print("\nOMEDETO !!")
 elif False:
 
