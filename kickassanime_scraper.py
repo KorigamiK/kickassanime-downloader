@@ -242,13 +242,17 @@ class player:
         """ returns list: [[server_name, link], ...]"""
         iframe_url = server_link.replace("player.php?", "pref.php?")
         soup = await fetch(iframe_url, self.session)
+
         def get_script():
             for i in soup.find_all("script"):
                 x = str(i)
                 if "document.write" in x and len(x) > 783:
-                    return b64decode(
-                        re.search(r'\.decode\("(.+)"\)', str(i)).group(1)
-                    )
+                    return b64decode(re.search(r'\.decode\("(.+)"\)', x).group(1))
+
+        async def get_list(bs_soup):
+            for i in bs_soup.find_all("script"):
+                if "file" in str(i):
+                    return json.loads(re.findall(r"\[{.*}]", str(i))[0])
 
         if server_name == "PINK-BIRD":
             script_tag: str = get_script()
@@ -264,20 +268,27 @@ class player:
                 re.search(r'(http.*)"', java_script).group(1).replace(r"\/", r"/"),
             ]
         elif server_name == "BETASERVER3":
-            res = ''
-            links_list = []
-            for i in soup.find_all('script'):
-                if 'file' in str(i):
-                    links_list = json.loads(re.findall(r'\[{.*}]', str(i))[0])
-                    break
+            res = ""
+            links_list = await get_list(soup)
             for i in links_list:
                 res += f"\t\t{i['label']}: {i['file']}\n"
-                        
+            return [server_name, res]
+
+        elif server_name == "BETA-SERVER":
+            script_tag = (
+                str(get_script())
+                .replace("file", r'"file"')
+                .replace("label", r'"label"')
+            )
+            links_list = json.loads(re.search(r"\[\{.+\}\]", script_tag).group(0))
+            res = ""
+            for i in links_list:
+                res += f"\t\t{i['label']}: {i['file']}\n"
             return [server_name, res]
 
         else:
             # print(f"not implemented server {server_name}")
-            return [server_name, server_link]
+            return [server_name, iframe_url]
 
 
 async def automate_scraping(
@@ -321,7 +332,8 @@ async def automate_scraping(
                     f.write("\n")
                     l, n = i
                     f.write(f"{n}: {l} \n")
-        ans = 'n'
+
+        ans = "n"
         if automatic_downloads:
             ans = "y"
         else:
@@ -368,8 +380,10 @@ if __name__ == "__main__":
     import uvloop
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    link = "https://www2.kickassanime.rs/anime/dr-stone-stone-wars-802545/episode-02-114680"
-    asyncio.get_event_loop().run_until_complete(automate_scraping(link, 1, 2, only_player=True))
+    link = "https://www2.kickassanime.rs/anime/rezero-kara-hajimeru-isekai-seikatsu-2nd-season-815651"
+    asyncio.get_event_loop().run_until_complete(
+        automate_scraping(link, 9, 9, only_player=True)
+    )
     print("\nOMEDETO !!")
 elif False:
 
