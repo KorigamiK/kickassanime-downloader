@@ -135,11 +135,10 @@ class kickass:
         gen = await self.scrape_episodes()
         ed = end or self.last_episode
         x = 0
-        if end != None:
+        if end != None or end != ed:
             for _ in gen:
                 if x != self.last_episode - ed - 1:
                     x += 1
-                    pass
                 else:
                     x += 1
                     break
@@ -298,6 +297,7 @@ async def automate_scraping(
     automatic_downloads=False,
     download_location=os.getcwd(),
     only_player=False,
+    get_ext_servers=False,
 ):
     async with ClientSession() as sess:
         var = kickass(sess, link)
@@ -307,17 +307,25 @@ async def automate_scraping(
             tasks.append(i)
         embed_result = await asyncio.gather(*tasks)
 
+        def write_ext_servers(ext_list, episode_number):
+            with open("episodes.txt", "a+") as f:
+                f.write(f'\n{var.name} episode {episode_number}:\n')
+                for i in ext_list:
+                    for ext_name, ext_link in i.items():
+                        f.write(f'\t\t{ext_name}: {ext_link}\n')
+
         download_tasks = []
         player_tasks = []
         for i in embed_result:
             print(f"Starting episode {i['ep_num']}")
-            if i["ext_servers"] != None:
-                print(f"available ext servers are {i['ext_servers']}")
+            
             if i["episode_countdown"] == True:
                 print(f'episode {i["ep_num"]} is still in countdown')
                 continue
             elif i["can_download"] and not only_player:
                 download_tasks.append(var.get_download(i["download"], i["ep_num"]))
+            elif i["ext_servers"] != None and get_ext_servers:
+                write_ext_servers(i['ext_servers'], i['ep_num'])
             else:
                 player_tasks.append(var.get_from_player(i["player"], i["ep_num"]))
 
@@ -364,7 +372,10 @@ async def automate_scraping(
             if not only_player:
                 write_links(links_and_names)
 
-        to_play = await asyncio.gather(*player_tasks)
+        if len(player_tasks) != 0:
+            to_play = await asyncio.gather(*player_tasks)
+        else:
+            to_play = [None]
 
         for i in to_play:
             if not only_player:
@@ -380,9 +391,9 @@ if __name__ == "__main__":
     import uvloop
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    link = "https://www2.kickassanime.rs/anime/rezero-kara-hajimeru-isekai-seikatsu-2nd-season-815651"
+    link = "https://www2.kickassanime.rs/anime/k-on-716909"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 9, 9, only_player=True)
+        automate_scraping(link, 2, 3, only_player=True, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:
