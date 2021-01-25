@@ -135,7 +135,7 @@ class kickass:
         gen = await self.scrape_episodes()
         ed = end or self.last_episode
         x = 0
-        if end != None or end != ed:
+        if end != None:
             for _ in gen:
                 if x != self.last_episode - ed - 1:
                     x += 1
@@ -378,7 +378,7 @@ async def automate_scraping(
             to_play = [None]
 
         for i in to_play:
-            if not only_player:
+            if not only_player and i:
                 print(i)
 
         if len(links_and_names) == 0:
