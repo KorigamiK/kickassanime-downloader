@@ -5,8 +5,9 @@ import re
 import traceback
 
 with open("to_update.json") as f:
-    needed = json.loads(f.read())
-
+    data = json.loads(f.read())
+    needed = data['anime']
+    download_location = data['download_location']
 
 async def main():
     tasks = []
@@ -17,7 +18,7 @@ async def main():
                 start_episode=start,
                 end_episode=None,
                 automatic_downloads=True,
-                download_location="/home/origami/Videos/Anime/",
+                download_location=download_location,
             )
         )
     try:
@@ -36,7 +37,8 @@ async def main():
             continue
 
     with open("to_update.json", "w") as f:
-        json.dump(needed, f, indent=4, ensure_ascii=False)
+        data['anime']=needed
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
