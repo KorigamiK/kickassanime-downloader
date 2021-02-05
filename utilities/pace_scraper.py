@@ -195,12 +195,12 @@ class scraper:
         ]
 
     async def get_final_links(self, link):  # link here is for server
-        print(link)
+        # print(link) # use for debugging
         try:
             server = link.split("https://haloani.ru")[1].split("/")[1]
         except:
             try:
-                print("Its the new server kaa-play")
+                # print("Its the new server kaa-play")
                 server = link.split("https://kaa-play.com")[1].split("/")[1]
             except:
                 print(f"bad serverlink {link}")

@@ -5,3 +5,5 @@ __pycache__
 bad
 episodes.txt
 all_links.txt
+config.json
+to_update.json

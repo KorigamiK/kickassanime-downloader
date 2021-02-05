@@ -2,8 +2,8 @@ import re
 import json
 import asyncio
 from utilities.async_web import fetch
-from aiohttp import ClientSession
-from utilities.anime_pace_scraperasdf import scraper
+from aiohttp import ClientSession, TCPConnector
+from utilities.pace_scraper import scraper
 import os
 from aiodownloader import downloader, utils
 from typing import List
@@ -11,8 +11,7 @@ from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 
 with open("config.json") as file:
-    priority = json.loads(file.read())
-
+    priority = json.loads(file.read())['priority']
 
 class kickass:
     def __init__(
@@ -135,7 +134,7 @@ class kickass:
         gen = await self.scrape_episodes()
         ed = end or self.last_episode
         x = 0
-        if end != None or end != ed:
+        if end != None:
             for _ in gen:
                 if x != self.last_episode - ed - 1:
                     x += 1
@@ -151,7 +150,7 @@ class kickass:
                 n += 1
                 yield self.get_embeds(i)
 
-    async def get_download(self, download_links: tuple, episode_number: int) -> tuple:
+    async def get_download(self, download_links: tuple, episode_number: int, no_stdout: bool=False) -> tuple:
         """returns tuple like (link, file_name)
         :download_links: are the available server links"""
         available = []
@@ -172,7 +171,8 @@ class kickass:
             if list(priority.keys()).index(i[0]) <= flag:
                 flag = list(priority.keys()).index(i[0])
                 final = i
-        print(final[0])
+        if no_stdout:
+            print(final[0]) # server name
         a = scraper(self.base_url)
         a.quality = priority[final[0]]
         await a.get_final_links(final[1])
@@ -299,7 +299,7 @@ async def automate_scraping(
     only_player=False,
     get_ext_servers=False,
 ):
-    async with ClientSession() as sess:
+    async with ClientSession(connector=TCPConnector(ssl=False)) as sess:
         var = kickass(sess, link)
         print(var.name)
         tasks = []
@@ -317,13 +317,13 @@ async def automate_scraping(
         download_tasks = []
         player_tasks = []
         for i in embed_result:
-            print(f"Starting episode {i['ep_num']}")
-            
+
+            print(f"Starting episode {i['ep_num']}")            
             if i["episode_countdown"] == True:
                 print(f'episode {i["ep_num"]} is still in countdown')
                 continue
             elif i["can_download"] and not only_player:
-                download_tasks.append(var.get_download(i["download"], i["ep_num"]))
+                download_tasks.append(var.get_download(i["download"], i["ep_num"], no_stdout=automatic_downloads))
             elif i["ext_servers"] != None and get_ext_servers:
                 write_ext_servers(i['ext_servers'], i['ep_num'])
             else:
@@ -354,8 +354,12 @@ async def automate_scraping(
                 jobs = [dow_maker(*i) for i in links_and_names if None not in i]
                 tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
                 if len(jobs) != 0:
-                    await utils.multi_progress_bar(jobs)
-                    await asyncio.gather(*tasks_3, return_exceptions=True)
+                    try:
+                        await utils.multi_progress_bar(jobs)
+                        await asyncio.gather(*tasks_3, return_exceptions=False)
+                    except Exception as e:
+                        print(e)
+                        print(links_and_names)
                 else:
                     # to avoid too much stdout
                     if automatic_downloads == False:
@@ -378,7 +382,7 @@ async def automate_scraping(
             to_play = [None]
 
         for i in to_play:
-            if not only_player:
+            if not only_player and i:
                 print(i)
 
         if len(links_and_names) == 0:
@@ -391,9 +395,9 @@ if __name__ == "__main__":
     import uvloop
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    link = "https://www2.kickassanime.rs/anime/k-on-716909"
+    link = "https://www2.kickassanime.rs/anime/the-promised-neverland-season-2-251047"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 2, 3, only_player=True, get_ext_servers=True)
+        automate_scraping(link, 5, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:
