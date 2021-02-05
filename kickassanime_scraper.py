@@ -11,7 +11,8 @@ from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 
 with open("config.json") as file:
-    priority = json.loads(file.read())['priority']
+    priority = json.loads(file.read())["priority"]
+
 
 class kickass:
     def __init__(
@@ -150,7 +151,9 @@ class kickass:
                 n += 1
                 yield self.get_embeds(i)
 
-    async def get_download(self, download_links: tuple, episode_number: int, no_stdout: bool=False) -> tuple:
+    async def get_download(
+        self, download_links: tuple, episode_number: int, no_stdout: bool = False
+    ) -> tuple:
         """returns tuple like (link, file_name)
         :download_links: are the available server links"""
         available = []
@@ -172,7 +175,7 @@ class kickass:
                 flag = list(priority.keys()).index(i[0])
                 final = i
         if no_stdout:
-            print(final[0]) # server name
+            print(final[0])  # server name
         a = scraper(self.base_url)
         a.quality = priority[final[0]]
         await a.get_final_links(final[1])
@@ -223,6 +226,7 @@ class player:
     async def get_player_embeds(self, player_link: str) -> List[str]:
         """ returns list[("name", "link"), ...]"""
         soup = await fetch(player_link, self.session)
+        result = [{"name": None, "src": None}]
         for i in soup.find_all("script"):
             if "var" in str(i):
                 data = await player._get_from_script(i)
@@ -309,23 +313,27 @@ async def automate_scraping(
 
         def write_ext_servers(ext_list, episode_number):
             with open("episodes.txt", "a+") as f:
-                f.write(f'\n{var.name} episode {episode_number}:\n')
+                f.write(f"\n{var.name} episode {episode_number}:\n")
                 for i in ext_list:
                     for ext_name, ext_link in i.items():
-                        f.write(f'\t\t{ext_name}: {ext_link}\n')
+                        f.write(f"\t\t{ext_name}: {ext_link}\n")
 
         download_tasks = []
         player_tasks = []
         for i in embed_result:
 
-            print(f"Starting episode {i['ep_num']}")            
+            print(f"Starting episode {i['ep_num']}")
             if i["episode_countdown"] == True:
                 print(f'episode {i["ep_num"]} is still in countdown')
                 continue
             elif i["can_download"] and not only_player:
-                download_tasks.append(var.get_download(i["download"], i["ep_num"], no_stdout=automatic_downloads))
+                download_tasks.append(
+                    var.get_download(
+                        i["download"], i["ep_num"], no_stdout=automatic_downloads
+                    )
+                )
             elif i["ext_servers"] != None and get_ext_servers:
-                write_ext_servers(i['ext_servers'], i['ep_num'])
+                write_ext_servers(i["ext_servers"], i["ep_num"])
             else:
                 player_tasks.append(var.get_from_player(i["player"], i["ep_num"]))
 
@@ -360,6 +368,7 @@ async def automate_scraping(
                     except Exception as e:
                         print(e)
                         print(links_and_names)
+                        return (var.name, None)
                 else:
                     # to avoid too much stdout
                     if automatic_downloads == False:
