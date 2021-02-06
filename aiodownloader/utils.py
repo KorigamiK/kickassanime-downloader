@@ -1,7 +1,7 @@
 import functools
 import asyncio
 import copy
-from typing import List, Optional, Coroutine
+from typing import List, Optional, Coroutine, Union
 
 from tqdm import tqdm
 
@@ -72,7 +72,7 @@ async def multi_progress_bar(jobs: List["downloader.DownloadJob"]) -> None:
 
 
 def make_sync(
-    couroutine: [Coroutine, asyncio.Future], loop: Optional[asyncio.BaseEventLoop]
+    couroutine: Union[Coroutine, asyncio.Future], loop: Optional[asyncio.BaseEventLoop]
 ):
     """
     Wraps a couroutine to work synchronously.

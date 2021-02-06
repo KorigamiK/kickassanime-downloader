@@ -10,6 +10,12 @@ from typing import List
 from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 
+try:# trying to apply uvloop
+    import uvloop
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+except:
+    pass
+
 with open("config.json") as file:
     priority = json.loads(file.read())["priority"]
 
@@ -343,6 +349,7 @@ async def automate_scraping(
             return downloader.DownloadJob(sess, url, name, download_location)
 
         def write_links(links_list):
+            '''for player links'''
             with open("episodes.txt", "a+") as f:
                 for i in links_list:
                     f.write("\n")
@@ -363,7 +370,8 @@ async def automate_scraping(
                 tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
                 if len(jobs) != 0:
                     try:
-                        await utils.multi_progress_bar(jobs)
+                        if not automatic_downloads:# will not get progress bars for automatic downloads to speed up the proceess
+                            await utils.multi_progress_bar(jobs)
                         await asyncio.gather(*tasks_3, return_exceptions=False)
                     except Exception as e:
                         print(e)
@@ -372,9 +380,7 @@ async def automate_scraping(
                 else:
                     # to avoid too much stdout
                     if automatic_downloads == False:
-                        print(
-                            "Nothing to download"
-                        )  # when countdown links may give none and non empty links_and_names
+                        print("Nothing to download")  # when countdown links may give none and non empty links_and_names
 
             else:
                 # to avoid too much stdout
@@ -401,10 +407,7 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    import uvloop
-
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    link = "https://www2.kickassanime.rs/anime/the-promised-neverland-season-2-251047"
+    link = "https://www2.kickassanime.rs/anime/rezero-kara-hajimeru-isekai-seikatsu-2nd-season-part-2-613847"
     asyncio.get_event_loop().run_until_complete(
         automate_scraping(link, 5, only_player=False, get_ext_servers=True)
     )
