@@ -338,8 +338,9 @@ async def automate_scraping(
                         i["download"], i["ep_num"], no_stdout=automatic_downloads
                     )
                 )
-            elif i["ext_servers"] != None and get_ext_servers:
+            elif (i["ext_servers"] is not None) and get_ext_servers:
                 write_ext_servers(i["ext_servers"], i["ep_num"])
+                print(f"Written ext_servers for episode {i['ep_num']}")
             else:
                 player_tasks.append(var.get_from_player(i["player"], i["ep_num"]))
 
@@ -407,9 +408,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/rezero-kara-hajimeru-isekai-seikatsu-2nd-season-part-2-613847"
+    link = "https://www2.kickassanime.rs/anime/honobono-log-126768"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 5, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 1, 1, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:

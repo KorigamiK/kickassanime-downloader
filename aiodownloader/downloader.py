@@ -43,7 +43,7 @@ class DownloadJob:
         self._session = session
         self._chunk_size = chunk_size
 
-        self.file_name = file_name if file_name != None else file_url.split("/")[~0]
+        self.file_name = file_name if file_name is not None else file_url.split("/")[~0]
         self.file_path = (
             os.path.join(save_path, self.file_name) if save_path else self.file_name
         )
@@ -63,7 +63,7 @@ class DownloadJob:
                     self.size = int(resp.headers["Content-Length"])
 
                 else:
-                    raise Exception(
+                    raise aiodownloader_error(
                         message=f"There was a problem processing {self.file_url}",
                         code=resp.status,
                     )
@@ -98,12 +98,20 @@ class DownloadJob:
                 return self
 
             else:
-                raise Exception(
+                raise aiodownloader_error(
                     message=f"There was a problem processing {self.file_url}",
                     code=resp.status,
                 )
 
+class aiodownloader_error(Exception):
+    def __init__(self, code, message):
+        self.code = code
+        self.message = message
+        super().__init__(self.message)
 
+    def __str__(self):
+        return f'Response code {self.code}'
+        
 class Handler:
     """
     Top level interface with the downloader. It creates the download jobs and handles them.
@@ -176,7 +184,6 @@ class Handler:
 
 
 if __name__ == "__main__":
-    import os
 
     async def downlaod_async():
         async with aiohttp.ClientSession() as sess:
