@@ -1,1 +1,0 @@
-python automatic_checker.py

@@ -4,7 +4,7 @@ from kickassanime_scraper import automate_scraping
 import re
 import traceback
 
-with open("to_update.json") as f:
+with open("./Config/to_update.json") as f:
     data = json.loads(f.read())
     needed = data['anime']
     download_location = data['download_location']
@@ -36,7 +36,7 @@ async def main():
             print(f"\nlatest for {j}")
             continue
 
-    with open("to_update.json", "w") as f:
+    with open("./Config/to_update.json", "w") as f:
         data['anime']=needed
         json.dump(data, f, indent=4, ensure_ascii=False)
 

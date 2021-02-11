@@ -16,7 +16,7 @@ try:# trying to apply uvloop
 except:
     pass
 
-with open("config.json") as file:
+with open("./Config/config.json") as file:
     priority = json.loads(file.read())["priority"]
 
 
