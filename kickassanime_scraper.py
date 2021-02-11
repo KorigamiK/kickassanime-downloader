@@ -10,14 +10,17 @@ from typing import List, Dict
 from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 
-try:# trying to apply uvloop
+try:  # trying to apply uvloop
     import uvloop
+
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 except:
     pass
 
 with open("./Config/config.json") as file:
-    priority = json.loads(file.read())["priority"]
+    data = json.loads(file.read())
+    priority = data["priority"]
+    debug = data["debug"]
 
 
 class kickass:
@@ -31,7 +34,7 @@ class kickass:
         if url.endswith("/"):
             url = url[:-1]
         else:
-            pass        
+            pass
         if "episode" not in url.split("/")[-1]:
             self.base_url = url
         else:
@@ -169,7 +172,8 @@ class kickass:
         available = []
         # print(type(priority))
         for i in download_links:
-            # print(i[0])
+            if debug:
+                print(i[0])
             if i[0] in priority.keys():
                 available.append(i)
         # print(available)
@@ -354,7 +358,7 @@ async def automate_scraping(
             return downloader.DownloadJob(sess, url, name, download_location)
 
         def write_links(links_list):
-            '''for player links'''
+            """for player links"""
             with open("episodes.txt", "a+") as f:
                 for i in links_list:
                     f.write("\n")
@@ -375,7 +379,7 @@ async def automate_scraping(
                 tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
                 if len(jobs) != 0:
                     try:
-                        if not automatic_downloads:# will not get progress bars for automatic downloads to speed up the proceess
+                        if not automatic_downloads:  # will not get progress bars for automatic downloads to speed up the proceess
                             await utils.multi_progress_bar(jobs)
                         await asyncio.gather(*tasks_3, return_exceptions=False)
                     except Exception as e:
