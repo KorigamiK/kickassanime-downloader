@@ -8,6 +8,7 @@ with open("./Config/to_update.json") as f:
     data = json.loads(f.read())
     needed = data['anime']
     download_location = data['download_location']
+    pause = data['pause_on_complete']
 
 async def main():
     tasks = []
@@ -43,4 +44,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())
-    _ = input('\nPress ENTER key to exit...')
+    if pause:
+        _ = input('\nPress ENTER to exit...')
+    else:
+        pass

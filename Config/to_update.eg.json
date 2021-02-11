@@ -12,5 +12,6 @@
         "https://www2.kickassanime.rs/anime/the-low-tier-character-tomozaki-kun-382592": 6,
         "https://www2.kickassanime.rs/anime/wonder-egg-priority-545544": 5
     },
-    "download_location": "/home/origami/Videos/Anime/"
+    "download_location": "/home/origami/Videos/Anime/",
+    "pause_on_complete": true
 }

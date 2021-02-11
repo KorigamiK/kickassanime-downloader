@@ -6,7 +6,7 @@ from aiohttp import ClientSession, TCPConnector
 from utilities.pace_scraper import scraper
 import os
 from aiodownloader import downloader, utils
-from typing import List
+from typing import List, Dict
 from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 
@@ -28,6 +28,10 @@ class kickass:
         arbitrary_name=False,
         episode_link=None,
     ):
+        if url.endswith("/"):
+            url = url[:-1]
+        else:
+            pass        
         if "episode" not in url.split("/")[-1]:
             self.base_url = url
         else:
@@ -78,7 +82,7 @@ class kickass:
 
         print(f"Getting episode {episode_num}")
         soup = await fetch(self.episode_link, self.session)
-        data: dict[str] = None
+        data: Dict[str, str] = None
         for i in soup.find_all("script"):
             if "appUrl" in str(i):
                 data = await kickass._get_data(i)
@@ -408,9 +412,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/honobono-log-126768"
+    link = "https://www2.kickassanime.rs/anime/dr-stone-stone-wars-802545/"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 1, 1, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 5, None, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:
