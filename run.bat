@@ -1,2 +1,1 @@
 python automatic_checker.py
-PAUSE
