@@ -192,7 +192,7 @@ class kickass:
             if list(priority.keys()).index(i[0]) <= flag:
                 flag = list(priority.keys()).index(i[0])
                 final = i
-        if no_stdout:
+        if not no_stdout:
             print(final[0])  # server name
         a = scraper(self.base_url)
         a.quality = priority[final[0]]
