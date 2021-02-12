@@ -1,2 +1,2 @@
 # kickassanime-downloader
-A nice asynchronous anime downloader from kickassanime.
+A nice asynchronous anime downloader for kickassanime.

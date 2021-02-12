@@ -22,6 +22,8 @@ with open("./Config/config.json") as file:
     priority = data["priority"]
     debug = data["debug"]
 
+def format_float(num):
+    return f'{num:04.1f}'.rstrip('0').rstrip('.')
 
 class kickass:
     def __init__(
@@ -53,6 +55,7 @@ class kickass:
         return json.loads(a)
 
     async def scrape_episodes(self) -> GeneratorExit:
+        '''returns urls of each episode in decreasing order'''
         soup = await fetch(self.base_url, self.session)
         results = [None]
         for i in soup.find_all("script"):
@@ -79,11 +82,12 @@ class kickass:
             self.episode_link = episode_link
 
         try:
-            episode_num = int(self.episode_link.split("/")[-1].split("-")[1])
+            # episode_num = int(self.episode_link.split("/")[-1].split("-")[1])
+            episode_num = float('.'.join(self.episode_link.split('/')[-1].replace('episode-', '').split('-')[:-1]))
         except ValueError:  # for ovas and stuff
-            episode_num = 0
+            episode_num = 0.0
 
-        print(f"Getting episode {episode_num}")
+        print(f"Getting episode {format_float(episode_num)}")
         soup = await fetch(self.episode_link, self.session)
         data: Dict[str, str] = None
         for i in soup.find_all("script"):
@@ -165,7 +169,7 @@ class kickass:
                 yield self.get_embeds(i)
 
     async def get_download(
-        self, download_links: tuple, episode_number: int, no_stdout: bool = False
+        self, download_links: tuple, episode_number: float, no_stdout: bool = False
     ) -> tuple:
         """returns tuple like (link, file_name)
         :download_links: are the available server links"""
@@ -178,7 +182,7 @@ class kickass:
                 available.append(i)
         # print(available)
         if len(available) == 0:
-            print(f"No available server in config.json for episode {episode_number}")
+            print(f"No available server in config.json for episode {format_float(episode_number)}")
             return (None, None)
 
         await asyncio.sleep(0)
@@ -193,17 +197,17 @@ class kickass:
         a = scraper(self.base_url)
         a.quality = priority[final[0]]
         await a.get_final_links(final[1])
-        file_name = f"{self.name} ep_{episode_number:02d}.mp4"
+        file_name = f"{self.name} ep_{format_float(episode_number)}.mp4"
         # print(file_name)
         if len(a.final_dow_urls) != 0:
             return (a.final_dow_urls[0].replace(" ", "%20"), file_name)
         else:
-            print(f"cannot download {episode_number}")
+            print(f"cannot download {format_float(episode_number)}")
             return (None, None)
 
-    async def get_from_player(self, player_links: list, episode_number: int) -> str:
+    async def get_from_player(self, player_links: list, episode_number: float) -> str:
         a = player(self.session)
-        print(f"writing episode {episode_number}\n")
+        print(f"writing episode {format_float(episode_number)}\n")
         flag = False
         if len(player_links) > 1:
             print(f"number of player links is {len(player_links)}")
@@ -212,7 +216,7 @@ class kickass:
             pass
 
         with open("episodes.txt", "a+") as f:
-            f.write(f"\n{self.name} episode {episode_number}: \n")
+            f.write(f"\n{self.name} episode {format_float(episode_number)}: \n")
             for i, j in await a.get_player_embeds(player_links[0]):
                 # await a.get_from_server(j)
                 f.write(f"\t{i}: {j}\n")
@@ -221,7 +225,7 @@ class kickass:
                         f.write(f"\t{i}\n")
                 else:
                     pass
-        return f"No download links for {self.name} episode {episode_number}. Written player links"
+        return f"No download links for {self.name} episode {format_float(episode_number)}. Written player links"
 
 
 class player:
@@ -327,7 +331,7 @@ async def automate_scraping(
 
         def write_ext_servers(ext_list, episode_number):
             with open("episodes.txt", "a+") as f:
-                f.write(f"\n{var.name} episode {episode_number}:\n")
+                f.write(f"\n{var.name} episode {format_float(episode_number)}:\n")
                 for i in ext_list:
                     for ext_name, ext_link in i.items():
                         f.write(f"\t\t{ext_name}: {ext_link}\n")
@@ -336,9 +340,9 @@ async def automate_scraping(
         player_tasks = []
         for i in embed_result:
 
-            print(f"Starting episode {i['ep_num']}")
+            print(f"Starting episode {format_float(i['ep_num'])}")
             if i["episode_countdown"] == True:
-                print(f'episode {i["ep_num"]} is still in countdown')
+                print(f'episode {format_float(i["ep_num"])} is still in countdown')
                 continue
             elif i["can_download"] and not only_player:
                 download_tasks.append(
@@ -348,7 +352,7 @@ async def automate_scraping(
                 )
             elif (i["ext_servers"] is not None) and get_ext_servers:
                 write_ext_servers(i["ext_servers"], i["ep_num"])
-                print(f"Written ext_servers for episode {i['ep_num']}")
+                print(f"Written ext_servers for episode {format_float(i['ep_num'])}")
             else:
                 player_tasks.append(var.get_from_player(i["player"], i["ep_num"]))
 
@@ -416,7 +420,7 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/dr-stone-stone-wars-802545/"
+    link = "https://www2.kickassanime.rs/anime/the-promised-neverland-season-2-251047/"
     asyncio.get_event_loop().run_until_complete(
         automate_scraping(link, 5, None, only_player=False, get_ext_servers=True)
     )
