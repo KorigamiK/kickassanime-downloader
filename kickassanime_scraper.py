@@ -22,7 +22,7 @@ with open("./Config/config.json") as file:
     priority = data["priority"]
     debug = data["debug"]
 
-def format_float(num):
+def format_float(num) -> str:
     return f'{num:04.1f}'.rstrip('0').rstrip('.')
 
 class kickass:
@@ -174,9 +174,8 @@ class kickass:
         """returns tuple like (link, file_name)
         :download_links: are the available server links"""
         available = []
-        # print(type(priority))
         for i in download_links:
-            if debug:
+            if not (True or debug): # always false I know it would print all available servers otherwise 
                 print(i[0])
             if i[0] in priority.keys():
                 available.append(i)
@@ -192,9 +191,10 @@ class kickass:
             if list(priority.keys()).index(i[0]) <= flag:
                 flag = list(priority.keys()).index(i[0])
                 final = i
-        if not no_stdout:
+        if (not no_stdout) or debug:
             print(final[0])  # server name
-        a = scraper(self.base_url)
+            print(final[1])  # server link
+        a = scraper(self.base_url, session=self.session, get_method=fetch)
         a.quality = priority[final[0]]
         await a.get_final_links(final[1])
         file_name = f"{self.name} ep_{format_float(episode_number)}.mp4"
@@ -420,9 +420,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/the-promised-neverland-season-2-251047/"
+    link = "https://www2.kickassanime.rs/anime/kimetsu-gakuen-valentine-hen-716888"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 5, None, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 3, 3, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:

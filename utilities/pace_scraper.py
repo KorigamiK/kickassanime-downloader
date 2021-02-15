@@ -12,7 +12,7 @@ from tabulate import tabulate
 
 
 class scraper:
-    def __init__(self, url):
+    def __init__(self, url, session=None, get_method=None):
         self.orig_url = url
         self.host = url.split("/")[2]
         self.anime = url.split("/")[-2]
@@ -23,6 +23,8 @@ class scraper:
             .replace("-", " ")
             .capitalize()
         )
+        self.session = session
+        self.get_method:bs = get_method
 
     @property
     def episode(self):
@@ -193,6 +195,37 @@ class scraper:
         self.options += [
             f"-O {(self.name + ' ' + self.episode + '.mp4').replace(' ', '_')}"
         ]
+    
+    async def _magenta(self, link):
+        # return scraper._kickassanimex(self, link) # still works
+        if not self.session: 
+            soup = bs(requests.get(link).text, "html.parser")
+        else:
+            soup = await self.get_method(link, self.session)
+        script = soup.select('script[type="text/javascript"]')[2]
+        res = base64.b64decode(re.search(r'decode\("(.+)"\)', str(script)).group(1))
+        html = bs(res, 'html.parser')
+        link_and_quality = [(i['href'], i.text) for i in html.find_all('a')]
+        flag = True
+        for index, data in enumerate(link_and_quality):
+            try:
+                self.quality
+                flag = False
+                break
+            except:
+                print(index, data[1])
+
+        if flag == True:
+            setattr(self, "quality", int(input("Enter quality number: ")))
+
+        self.final_dow_urls += [link_and_quality[self.quality][0]]
+        self.options += [
+            '--header="Referer: https://kaa-play.com"'
+            + " -O "
+            + (self.name + " " + self.episode + ".mp4").replace(" ", "_")
+        ]
+
+        return True
 
     async def get_final_links(self, link):  # link here is for server
         # print(link) # use for debugging
@@ -208,7 +241,7 @@ class scraper:
 
         self.server = server
         if server == "KickAssAnimeX":
-            scraper._kickassanimex(self, link)
+            await scraper._magenta(self, link)
 
         elif server == "Kickassanimev2":
             scraper._kickassanimev2(self, link)
@@ -246,6 +279,8 @@ class scraper:
             scraper._kickassanimex(self, link)
         elif server == "html5":
             scraper._html5(self, link)
+        elif server == "Magenta02":
+            await scraper._magenta(self, link)
         else:
             print("Not supported")
             print(self.server, link)
