@@ -174,6 +174,7 @@ class kickass:
         """returns tuple like (link, file_name)
         :download_links: are the available server links"""
         available = []
+        file_name = f"{self.name} ep_{format_float(episode_number)}.mp4"
         for i in download_links:
             if not (True or debug): # always false I know it would print all available servers otherwise 
                 print(i[0])
@@ -182,7 +183,7 @@ class kickass:
         # print(available)
         if len(available) == 0:
             print(f"No available server in config.json for episode {format_float(episode_number)}")
-            return (None, None)
+            return (None, file_name)
 
         await asyncio.sleep(0)
         flag = 999
@@ -197,13 +198,12 @@ class kickass:
         a = scraper(self.base_url, session=self.session, get_method=fetch)
         a.quality = priority[final[0]]
         await a.get_final_links(final[1])
-        file_name = f"{self.name} ep_{format_float(episode_number)}.mp4"
         # print(file_name)
         if len(a.final_dow_urls) != 0:
             return (a.final_dow_urls[0].replace(" ", "%20"), file_name)
         else:
             print(f"cannot download {format_float(episode_number)}")
-            return (None, None)
+            return (None, file_name)
 
     async def get_from_player(self, player_links: list, episode_number: float) -> str:
         a = player(self.session)
@@ -364,10 +364,9 @@ async def automate_scraping(
         def write_links(links_list):
             """for player links"""
             with open("episodes.txt", "a+") as f:
-                for i in links_list:
+                for link, name in links_list:
                     f.write("\n")
-                    l, n = i
-                    f.write(f"{n}: {l} \n")
+                    f.write(f"{name}: {link} \n")
 
         ans = "n"
         if automatic_downloads:
@@ -420,9 +419,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/kimetsu-gakuen-valentine-hen-716888"
+    link = "https://www2.kickassanime.rs/anime/yahari-ore-no-seishun-love-comedy-wa-machigatteiru-576591"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 3, 3, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 7, None, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:

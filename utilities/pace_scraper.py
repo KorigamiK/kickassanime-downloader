@@ -157,7 +157,7 @@ class scraper:
         flag = True
         data = soup.find_all("a", rel="nofollow")
         if len(data) == 0:
-            raise Exception
+            return None
         else:
             pass
         for j, i in enumerate(data):
