@@ -97,6 +97,7 @@ class scraper:
                         .split('document.write(Base64.decode("')[1]
                         .split('"));')[0]
                     )
+                    break
                 except Exception as e:
                     print("Something went wrong with the server", e)
                     return None
@@ -114,6 +115,9 @@ class scraper:
             dow_urls_allqualities += [str("".join(i["href"]))]
         if flag == True:
             setattr(self, "quality", int(input("Enter quality number: ")))
+        if dow_urls_allqualities[self.quality] == "https://kaa-play.com/redirector.php?link=": #dead link
+            return None
+
         self.final_dow_urls += [
             dow_urls_allqualities[self.quality]
         ]  # I dunno why but beautifulsoup4 need to be converted to list and then they behave as strings?

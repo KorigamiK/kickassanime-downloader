@@ -175,7 +175,9 @@ class kickass:
         :download_links: are the available server links"""
         available = []
         file_name = f"{self.name} ep_{format_float(episode_number)}.mp4"
+        tmp_serv = None
         for i in download_links:
+            tmp_serv = i[0]
             if not (True or debug): # always false I know it would print all available servers otherwise 
                 print(i[0])
             if i[0] in priority.keys():
@@ -183,6 +185,7 @@ class kickass:
         # print(available)
         if len(available) == 0:
             print(f"No available server in config.json for episode {format_float(episode_number)}")
+            print(f"Try adding {tmp_serv} to the config file")
             return (None, file_name)
 
         await asyncio.sleep(0)
@@ -387,7 +390,8 @@ async def automate_scraping(
                         await asyncio.gather(*tasks_3, return_exceptions=False)
                     except Exception as e:
                         print(e)
-                        print(links_and_names)
+                        if debug:
+                            print(links_and_names)
                         return (var.name, None)
                 else:
                     # to avoid too much stdout
@@ -412,16 +416,16 @@ async def automate_scraping(
             if not only_player and i:
                 print(i)
 
-        if len(links_and_names) == 0:
+        if len(links_and_names) == 0 or None in links_and_names[0]: # None when no server in config is available
             return (var.name, None)
         else:
             return (var.name, links_and_names[0][1])
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/yahari-ore-no-seishun-love-comedy-wa-machigatteiru-576591"
+    link = "https://www2.kickassanime.rs/anime/wonder-egg-priority-545544"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 7, None, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 6, None, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:

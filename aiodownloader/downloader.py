@@ -110,7 +110,7 @@ class aiodownloader_error(Exception):
         super().__init__(self.message)
 
     def __str__(self):
-        return f'Response code {self.code}'
+        return f'Response code {self.code} {self.message}'
         
 class Handler:
     """
