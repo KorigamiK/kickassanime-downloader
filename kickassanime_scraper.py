@@ -121,7 +121,7 @@ class kickass:
                 ret["player"].append(i.strip())
         try:
             if data["ext_servers"] != None:
-                ret["ext_servers"] = data["ext_servers"]
+                ret["ext_servers"] = {i['name']: i['link'] for i in data["ext_servers"]}
             else:
                 pass
         except:
@@ -146,10 +146,13 @@ class kickass:
         else:
             return (None, None)
 
-    async def get_episodes_embeds_range(self, start=0, end=None):
+    async def get_episodes_embeds_range(self, start=0, end=None, episodes_tuple=None):
         if start == None:
             start = 0
-        gen = await self.scrape_episodes()
+        if episodes_tuple is None:
+            gen = await self.scrape_episodes()
+        else:
+            gen = episodes_tuple
         ed = end or self.last_episode
         x = 0
         if end != None:
@@ -224,8 +227,8 @@ class kickass:
                 # await a.get_from_server(j)
                 f.write(f"\t{i}: {j}\n")
                 if flag == True:
-                    for i in player_links[1:]:
-                        f.write(f"\t{i}\n")
+                    for k in player_links[1:]:
+                        f.write(f"\t{k}\n")
                 else:
                     pass
         return f"No download links for {self.name} episode {format_float(episode_number)}. Written player links"
@@ -244,21 +247,28 @@ class player:
             print("invalid player url supplied")
             return None
 
-    async def get_player_embeds(self, player_link: str) -> List[str]:
-        """ returns list[("name", "link"), ...]"""
+    async def get_player_embed_links(self, player_link: str) -> list:
+        '''returns list[{"name": None, "src": None}] '''
         soup = await fetch(player_link, self.session)
-        result = [{"name": None, "src": None}]
         for i in soup.find_all("script"):
             if "var" in str(i):
                 data = await player._get_from_script(i)
                 if data:
-                    result = data
-                    break
+                    return data
                 else:
                     continue
         else:
             print("Player link error")
+            return None
+
+    async def get_player_embeds(self, player_link: str) -> List[str]:
+        """ returns list[("name", "link"), ...]"""
+        
+        result = await player.get_player_embed_links(self, player_link)
+        if result is None:
             return [(None, None)]
+        else:
+            pass
         res = [self.get_from_server(i["name"], i["src"]) for i in result]
         return await asyncio.gather(*res)
 
@@ -283,7 +293,7 @@ class player:
             return [server_name, bs(script_tag, "html.parser").find("source")["src"]]
 
         elif server_name == "SAPPHIRE-DUCK":
-            script_tag: str = get_script()
+            script_tag: bytes = get_script()
             sap_duck = bs(script_tag, "html.parser")
             java_script = str(sap_duck.select_one("script"))
 
@@ -291,11 +301,12 @@ class player:
                 server_name,
                 re.search(r'(http.*)"', java_script).group(1).replace(r"\/", r"/"),
             ]
-        elif server_name == "BETASERVER3":
+        elif server_name == "BETASERVER3" or server_name == 'BETAPLAYER':
             res = ""
             links_list = await get_list(soup)
-            for i in links_list:
-                res += f"\t\t{i['label']}: {i['file']}\n"
+            # for i in links_list:
+            #     res += "\t\t{i['label']}: {i['file']}\n"
+            res = {i['label']: f"{i['file'].replace(' ', '%20')}" for i in links_list}
             return [server_name, res]
 
         elif server_name == "BETA-SERVER":
@@ -305,16 +316,58 @@ class player:
                 .replace("label", r'"label"')
             )
             links_list = json.loads(re.search(r"\[\{.+\}\]", script_tag).group(0))
-            res = ""
+            res = []
             for i in links_list:
-                res += f"\t\t{i['label']}: {i['file']}\n"
+                res += {i['label']: i['file']}
+            return [server_name, res]
+
+        elif server_name == 'DR.HOFFMANN':
+            soup = await fetch(server_link, self.session)
+            script_tag = str(get_script())
+            res = re.search(r'"(http.+)",label', script_tag).group(1)
             return [server_name, res]
 
         else:
             # print(f"not implemented server {server_name}")
             return [server_name, iframe_url]
 
+    async def _ext_gogo(self, url):
+        page = await fetch(url, self.session)
+        tag = str(page.find('div'))
+        return re.search(r"'(http.+)',label", tag).group(1)
 
+    async def get_ext_server(self, ext_link, server_name):
+        soup = await fetch(ext_link, self.session)
+        url = 'http:' + re.search(r"(\/.+)'", str(soup.select('script')[3])).group(1)
+        ret = None
+        if server_name == 'Vidcdn':
+            ret =  await self._ext_gogo(url)
+
+        elif server_name == 'Vidstreaming':
+            page = await fetch(url, self.session)
+            url = 'http:' + page.find('div', id="list-server-more").ul.find_all('li')[1]['data-video']
+            ret = await self._ext_gogo(url)
+        return ret
+
+    @staticmethod
+    async def search(query: str, session: ClientSession, option: int= None)-> dict:
+        ''' returns dict[name, slug, image] '''
+        api_url = 'https://www2.kickassanime.rs/api/anime_search'
+        data = {'keyword': query}
+        async with session.post(api_url, data=data) as resp:
+            data = await resp.json()
+        if len(data) != 0:
+            if option is not None:
+                return data[option]
+            else:
+                for j, i in enumerate(data):
+                    print(j, i['name'])
+                option = int(input('Enter anime number: '))
+                return data[option]
+        else:
+            print(f'No anime avaiable for {query}')
+            return None
+            
 async def automate_scraping(
     link,
     start_episode=None,
@@ -332,11 +385,10 @@ async def automate_scraping(
             tasks.append(i)
         embed_result = await asyncio.gather(*tasks)
 
-        def write_ext_servers(ext_list, episode_number):
+        def write_ext_servers(ext_dict, episode_number):
             with open("episodes.txt", "a+") as f:
                 f.write(f"\n{var.name} episode {format_float(episode_number)}:\n")
-                for i in ext_list:
-                    for ext_name, ext_link in i.items():
+                for ext_name, ext_link in ext_dict.items():
                         f.write(f"\t\t{ext_name}: {ext_link}\n")
 
         download_tasks = []

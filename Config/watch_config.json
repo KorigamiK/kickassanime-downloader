@@ -1,0 +1,12 @@
+{
+    "priority":{
+        "SAPPHIRE-DUCK": null,
+        "PINK-BIRD": null,
+        "DR.HOFFMANN": null,
+        "BETAPLAYER": "360p",
+        "BETA-SERVER": "360p",
+        "BETASERVER3": "360p"        
+    },
+    "ext_priority": ["Vidstreaming", "Vidcdn"],
+    "unused_ext": ["Mp4Upload", "Vidstreaming", "Xstreamcdn", "Streamango", "Rapidvideo", "Estream", "Oload", "OpenUpload", "Thevideo", "YourUpload"]
+}
