@@ -132,10 +132,13 @@ class kickass:
             ret["can_download"] = False
         ret["ep_num"] = episode_num
 
-        if "countdown" in ret["player"][0]:
-            ret["episode_countdown"] = True
-        else:
-            pass
+        try:
+            if "countdown" in ret["player"][0]:
+                ret["episode_countdown"] = True
+            else:
+                pass
+        except IndexError:
+            print('No player links available')
 
         return ret
 
@@ -475,7 +478,7 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/wonder-egg-priority-545544"
+    link = "https://www2.kickassanime.rs/anime/rezero-kara-hajimeru-isekai-seikatsu-2nd-season-part-2-613847/episode-07-619966"
     asyncio.get_event_loop().run_until_complete(
         automate_scraping(link, 6, None, only_player=False, get_ext_servers=True)
     )

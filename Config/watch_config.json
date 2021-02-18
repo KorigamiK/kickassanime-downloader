@@ -1,12 +1,12 @@
 {
     "priority":{
-        "SAPPHIRE-DUCK": null,
-        "PINK-BIRD": null,
-        "DR.HOFFMANN": null,
         "BETAPLAYER": "360p",
         "BETA-SERVER": "360p",
-        "BETASERVER3": "360p"        
+        "BETASERVER3": "360p" ,
+        "SAPPHIRE-DUCK": null,
+        "PINK-BIRD": null,
+        "DR.HOFFMANN": null       
     },
-    "ext_priority": ["Vidstreaming", "Vidcdn"],
+    "ext_priority": ["Vidcdn", "Vidstreaming"],
     "unused_ext": ["Mp4Upload", "Vidstreaming", "Xstreamcdn", "Streamango", "Rapidvideo", "Estream", "Oload", "OpenUpload", "Thevideo", "YourUpload"]
 }

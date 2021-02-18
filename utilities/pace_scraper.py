@@ -285,6 +285,8 @@ class scraper:
             scraper._html5(self, link)
         elif server == "Magenta02":
             await scraper._magenta(self, link)
+        elif server == "Magenta13":
+            await scraper._magenta(self, link)
         else:
             print("Not supported")
             print(self.server, link)
