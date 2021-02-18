@@ -1,0 +1,16 @@
+aiofiles
+aiohttp
+async-timeout
+attrs
+bs4
+certifi
+chardet
+idna
+multidict
+requests
+soupsieve
+tabulate
+tqdm
+typing-extensions
+urllib3
+yarl
