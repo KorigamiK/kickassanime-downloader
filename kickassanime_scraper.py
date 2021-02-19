@@ -344,7 +344,7 @@ class player:
     async def _ext_gogo(self, url):
         page = await fetch(url, self.session)
         tag = str(page.find('div'))
-        return re.search(r"'(http.+)',label", tag).group(1)
+        return re.search(r"'(http.+)',label", tag).group(1) #the first (0) result can be .m3u8 or .mp4 but the second (1) is always .m3u8. Can be experimented on later
 
     async def get_ext_server(self, ext_link, server_name):
         soup = await fetch(ext_link, self.session)
