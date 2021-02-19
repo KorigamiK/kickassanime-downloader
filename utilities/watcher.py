@@ -3,7 +3,7 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from kickassanime_scraper import kickass, player
+from kickassanime_scraper import kickass, player, debug
 from aiohttp import ClientSession, TCPConnector
 import asyncio
 import subprocess
@@ -31,7 +31,8 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False):
             ).__anext__()  # because async generator
         data = await data
         ext_links = data["ext_servers"]
-        # print(ext_links)
+        # print(data)
+        # raise
         player_links = data["player"]
 
     except StopAsyncIteration:
@@ -46,19 +47,25 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False):
     names = list(priority.keys())
     embed_links = None
 
-    async def try_ext():
-        print("Trying ext_servers")
+    async def try_ext(index=0):
+        if index == 0 :print("Trying ext_servers")
+        else: print('Trying next.')
+        if len(ext_priority)-1 == index: 
+            print("Cannot play using ext_servers. Try disabling the flag")
+            print(data)
+            # import pyperclip
+            # pyperclip.copy(f'{data}')
+            return None
+
         try:
-            assert ext_links[ext_priority[0]]
-            print(ext_priority[0])
+            assert ext_links[ext_priority[index]]
+            print(ext_priority[index])
             link = await player_scraper.get_ext_server(
-                ext_links[ext_priority[0]], ext_priority[0]
+                ext_links[ext_priority[index]], ext_priority[index]
             )
             return link
         except:
-            print("Cannot play using ext_servers. Try disabling the flag")
-            print(data)
-            return None
+            return await try_ext(index=index+1)
 
     if not ext_only:
         try:
@@ -99,6 +106,8 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False):
 
 def play(link):
     cmd = ["vlc", link]
+    if debug:
+        print(link)
     try:
         assert link is not None
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -125,9 +134,11 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 if __name__ == "__main__":
     episode = 1
-    link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" or None
-    query = None
-    opt = None or None
+    # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
+    link = None
+    query = 'stein'
+    opt = 0
+    flag = False
     asyncio.get_event_loop().run_until_complete(
-        watch(episode, link=link, query=query, option_number=opt, ext_only=True)
+        watch(episode, link=link, query=query, option_number=opt, ext_only=flag)
     )

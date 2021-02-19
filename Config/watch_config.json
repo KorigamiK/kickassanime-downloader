@@ -5,10 +5,12 @@
         "BETASERVER3": "360p",
         "SAPPHIRE-DUCK": null,
         "PINK-BIRD": null,
-        "DR.HOFFMANN": null
+        "DR.HOFFMANN": null,
+        "Vidstreaming": null
     },
     "ext_priority": [
         "Vidstreaming",
+    	"Gogo server",
         "Vidcdn"
     ],
     "unused_ext": [

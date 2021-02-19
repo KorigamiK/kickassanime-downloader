@@ -125,7 +125,7 @@ class kickass:
             else:
                 pass
         except:
-            print("ext server error")
+            print("Ext server error. None available")
         if ret["download"] != None:
             ret["download"] = await self.get_servers(ret["download"])
         else:
@@ -243,6 +243,7 @@ class player:
 
     @staticmethod
     async def _get_from_script(script):
+        ''' returns list[dict[name, scr]] '''
         try:
             a = re.findall(r"\{.+\}", str(script))[0]
             return json.loads(f"[{a}]")
@@ -252,6 +253,9 @@ class player:
 
     async def get_player_embed_links(self, player_link: str) -> list:
         '''returns list[{"name": None, "src": None}] '''
+        if 'axplayer/player' in player_link: # happens for older anime
+            return [{'name': 'Vidstreaming', 'src' : await self.get_ext_server(player_link, 'Vidstreaming')}]
+            
         soup = await fetch(player_link, self.session)
         for i in soup.find_all("script"):
             if "var" in str(i):
@@ -277,6 +281,9 @@ class player:
 
     async def get_from_server(self, server_name, server_link):
         """ returns list: [[server_name, link], ...]"""
+        if server_name == 'Vidstreaming': # from get_player_embed_links due to older anime. All the work has already been done
+            return [server_name, server_link]
+
         iframe_url = server_link.replace("player.php?", "pref.php?")
         soup = await fetch(iframe_url, self.session)
 
@@ -343,12 +350,13 @@ class player:
         soup = await fetch(ext_link, self.session)
         url = 'http:' + re.search(r"(\/.+)'", str(soup.select('script')[3])).group(1)
         ret = None
-        if server_name == 'Vidcdn':
+        if server_name == 'Vidcdn' or server_name == 'Gogo server':
             ret =  await self._ext_gogo(url)
 
         elif server_name == 'Vidstreaming':
-            page = await fetch(url, self.session)
-            url = 'http:' + page.find('div', id="list-server-more").ul.find_all('li')[1]['data-video']
+            # page = await fetch(url, self.session)
+            # url = 'http:' + page.find('div', id="list-server-more").ul.find_all('li')[1]['data-video'] # more servers can be accounted for.
+            url = url.replace('streaming.php?', 'loadserver.php?')
             ret = await self._ext_gogo(url)
         return ret
 
@@ -478,7 +486,7 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/rezero-kara-hajimeru-isekai-seikatsu-2nd-season-part-2-613847/episode-07-619966"
+    link = "https://www2.kickassanime.rs/anime/wonder-egg-priority-545544"
     asyncio.get_event_loop().run_until_complete(
         automate_scraping(link, 6, None, only_player=False, get_ext_servers=True)
     )
