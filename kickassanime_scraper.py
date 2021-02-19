@@ -357,6 +357,7 @@ class player:
             # page = await fetch(url, self.session)
             # url = 'http:' + page.find('div', id="list-server-more").ul.find_all('li')[1]['data-video'] # more servers can be accounted for.
             url = url.replace('streaming.php?', 'loadserver.php?')
+            url = url.replace('embed.php', 'loadserver.php') # sometimes
             ret = await self._ext_gogo(url)
         return ret
 
