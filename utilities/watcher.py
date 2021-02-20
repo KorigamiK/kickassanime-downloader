@@ -31,8 +31,6 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False):
             ).__anext__()  # because async generator
         data = await data
         ext_links = data["ext_servers"]
-        # print(data)
-        # raise
         player_links = data["player"]
 
     except StopAsyncIteration:
@@ -133,11 +131,11 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 
 if __name__ == "__main__":
-    episode = 1
+    episode = 2
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'stein'
-    opt = 0
+    query = 'hyouka'
+    opt = 1
     flag = False
     asyncio.get_event_loop().run_until_complete(
         watch(episode, link=link, query=query, option_number=opt, ext_only=flag)
