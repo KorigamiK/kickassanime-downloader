@@ -326,9 +326,7 @@ class player:
                 .replace("label", r'"label"')
             )
             links_list = json.loads(re.search(r"\[\{.+\}\]", script_tag).group(0))
-            res = []
-            for i in links_list:
-                res += {i['label']: i['file']}
+            res = {i['label'].strip(): i['file'] for i in links_list}
             return [server_name, res]
 
         elif server_name == 'DR.HOFFMANN':
@@ -487,9 +485,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/wonder-egg-priority-545544"
+    link = "https://www2.kickassanime.rs/anime/hyouka-180185"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 6, None, only_player=False, get_ext_servers=True)
+        automate_scraping(link, None, None, only_player=True, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:
