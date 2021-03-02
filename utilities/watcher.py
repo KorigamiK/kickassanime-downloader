@@ -103,7 +103,6 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False):
 
 
 def play(link):
-
     if debug:
         print(link)
     try:
