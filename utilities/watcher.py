@@ -1,6 +1,6 @@
 import sys
 from os import path
-
+from os import name as operating_system
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from kickassanime_scraper import kickass, player, debug
@@ -105,13 +105,18 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False):
 
 
 def play(link):
-    cmd = ["vlc", link]
+
     if debug:
         print(link)
     try:
         assert link is not None
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        process.wait()
+        if operating_system == 'nt':
+            query = f'vlc --play-and-exit -f --one-instance --no-playlist-enqueue "{link}"'
+            subprocess.run(query, shell=True)
+        else:
+            cmd = ["vlc", link]
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            process.wait()
     except:
         exit()
 

@@ -389,7 +389,7 @@ async def automate_scraping(
     only_player=False,
     get_ext_servers=False,
 ):
-    async with ClientSession(connector=TCPConnector(ssl=False)) as sess:
+    async with ClientSession(connector=TCPConnector(ssl=False), headers={'Connection': 'keep-alive'}) as sess:
         var = kickass(sess, link)
         print(var.name)
         tasks = []
