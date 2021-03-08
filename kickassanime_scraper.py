@@ -485,9 +485,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/hyouka-180185"
+    link = "https://www2.kickassanime.rs/anime/rezero-kara-hajimeru-isekai-seikatsu-shin-henshuu-ban-448628"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, None, None, only_player=True, get_ext_servers=True)
+        automate_scraping(link, None, None, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:
