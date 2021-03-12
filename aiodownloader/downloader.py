@@ -28,6 +28,7 @@ class DownloadJob:
     :param session: aiohttp session to be used on the job
     :param file_name: name to be used on the file. Defaults to the last part of the url
     :param save_path: dir where the file should be saved. Defaults to the current dir
+    :param headers: request headers dictionary
     """
 
     def __init__(
@@ -37,6 +38,7 @@ class DownloadJob:
         file_name: Optional[str] = None,
         save_path: Optional[str] = None,
         chunk_size: Optional[int] = 1024,
+        headers: Optional[dict] = None
     ):
 
         self.file_url = file_url
@@ -51,6 +53,7 @@ class DownloadJob:
         self.completed = False
         self.progress = 0
         self.size = 0
+        self.headers = headers
 
     async def get_size(self) -> int:
         """
@@ -58,7 +61,8 @@ class DownloadJob:
         :return: the files size in bytes
         """
         if not self.size:
-            async with self._session.get(self.file_url) as resp:
+            context = self._session.get(self.file_url) if self.headers is None else self._session.get(self.file_url, headers=self.headers)
+            async with context as resp:
                 if 200 <= resp.status < 300:
                     self.size = int(resp.headers["Content-Length"])
 
@@ -82,8 +86,9 @@ class DownloadJob:
         """
         Downloads the file from the given url to a file in the given path.
         """
+        context = self._session.get(self.file_url) if self.headers is None else self._session.get(self.file_url, headers=self.headers)
 
-        async with self._session.get(self.file_url) as resp:
+        async with context as resp:
             # Checkning the response code
             if 200 <= resp.status < 300:
                 # Saving the data to the file chunk by chunk.
