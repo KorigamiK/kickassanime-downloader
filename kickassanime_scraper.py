@@ -472,8 +472,8 @@ async def automate_scraping(
             if len(links_and_names_and_headers) != 0:
                 print(f"starting all downloads for {var.name} \nPlease Wait.....")
                 jobs = [
-                    dow_maker(*i) for i in links_and_names_and_headers if None not in i
-                ]
+                    dow_maker(*i) for i in links_and_names_and_headers if None not in i[:-1]
+                ]# as last is the headers which can be None
                 tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
                 if len(jobs) != 0:
                     try:
@@ -520,7 +520,7 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/the-low-tier-character-tomozaki-kun-382592/episode-10-636819"
+    link = "https://www2.kickassanime.rs/anime/horimiya-405153/episode-10-262841"
     asyncio.get_event_loop().run_until_complete(
         automate_scraping(link, 10, None, only_player=False, get_ext_servers=True)
     )
