@@ -520,9 +520,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/horimiya-405153/episode-10-262841"
+    link = "https://www2.kickassanime.rs/anime/dr-stone-stone-wars-802545/"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 10, None, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 9, 9, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:

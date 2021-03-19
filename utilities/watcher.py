@@ -111,9 +111,10 @@ def play(link):
             query = f'vlc --play-and-exit -f --one-instance --no-playlist-enqueue "{link}"'
             subprocess.run(query, shell=True)
         else:
-            cmd = ["vlc", link]
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-            process.wait()
+            cmd = ["mpv", f'"{link}"', "--http-header-fields='Referer: https://betaplayer.life/api/embed/1615556106095'"] # I know hardcoding is bad
+            subprocess.run(' '.join(cmd), shell=True)
+            # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            # process.wait()
     except:
         exit()
 
@@ -138,8 +139,8 @@ if __name__ == "__main__":
     episode = 2
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'hyouka'
-    opt = 1
+    query = 'hentai'
+    opt = 6
     flag = False
     asyncio.get_event_loop().run_until_complete(
         watch(episode, link=link, query=query, option_number=opt, ext_only=flag)
