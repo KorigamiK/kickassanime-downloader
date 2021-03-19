@@ -246,6 +246,7 @@ class scraper:
         self.server = server
         if server == "KickAssAnimeX":
             await scraper._magenta(self, link)
+            self.options = [{'Referer': 'https://betaplayer.life/api/embed/1615556106095'}]
 
         elif server == "Kickassanimev2":
             scraper._kickassanimev2(self, link)
