@@ -1,4 +1,4 @@
 @echo off
 set /p words=Enter args: 
-python3 play.py %words%
+python play.py %words%
 PAUSE
