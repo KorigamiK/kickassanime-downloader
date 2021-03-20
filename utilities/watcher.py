@@ -140,8 +140,8 @@ if __name__ == "__main__":
     episode = 2
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'hentai'
-    opt = 6
+    query = 'jojo'
+    opt = 1
     flag = False
     asyncio.get_event_loop().run_until_complete(
         watch(episode, link=link, query=query, option_number=opt, ext_only=flag)
