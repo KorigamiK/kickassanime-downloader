@@ -235,7 +235,7 @@ class kickass:
         print(f"writing episode {format_float(episode_number)}\n")
         flag = False
         if len(player_links) > 1:
-            print(f"number of player links is {len(player_links)}")
+            print(f"Number of player links is {len(player_links)}")
             flag = True
         else:
             pass
@@ -520,9 +520,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/dr-stone-stone-wars-802545/"
+    link = "https://www2.kickassanime.rs/anime/sorcery-fight-723619"
     asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 9, 9, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 21, None, only_player=False, get_ext_servers=True)
     )
     print("\nOMEDETO !!")
 elif False:

@@ -234,14 +234,12 @@ class scraper:
     async def get_final_links(self, link):  # link here is for server
         # print(link) # use for debugging
         try:
-            server = link.split("https://haloani.ru")[1].split("/")[1]
+            # print("Its the new server kaa-play")
+            # server = link.split("https://kaa-play.com")[1].split("/")[1]
+            server = re.search(r'((\.me)|(\.com)|(\.ru))\/(.+)\/', link).group(5)
         except:
-            try:
-                # print("Its the new server kaa-play")
-                server = link.split("https://kaa-play.com")[1].split("/")[1]
-            except:
-                print(f"bad serverlink {link}")
-                return
+            print(f"Bad serverlink {link}. It does not follow known pattern, please make an issue on github.")
+            return
 
         self.server = server
         if server == "KickAssAnimeX":
@@ -277,17 +275,23 @@ class scraper:
 
         elif server == "Theta-Original":
             scraper._kickassanimex(self, link)
+
         elif server == "kickassanime1":
             print("mightnot work")
             scraper._kickassanimex(self, link)
+
         elif server == "a-kickassanime":
             scraper._kickassanimex(self, link)
+
         elif server == "html5":
             scraper._html5(self, link)
+
         elif server == "Magenta02":
             await scraper._magenta(self, link)
+
         elif server == "Magenta13":
             await scraper._magenta(self, link)
+
         else:
             print("Not supported")
             print(self.server, link)
@@ -297,7 +301,6 @@ class scraper:
     def download(link, options):
         #         query = f"""wget "{link}" -q --show-progress --no-check-certificate {options}"""
         query = f"""wget "{link}" --no-check-certificate {options}"""
-
         subprocess.run(query, shell=True)
 
 
