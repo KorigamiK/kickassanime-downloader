@@ -130,6 +130,7 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
         else:
             print("No link or query supplied")
             return None
+        print(link)
         player_link = await get_watch_link(link, episode, session, ext_only)
         # print(player_link)
         play(player_link)
