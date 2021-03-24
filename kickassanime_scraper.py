@@ -2,8 +2,9 @@ import re
 import json
 import asyncio
 from utilities.async_web import fetch
-from aiohttp import ClientSession, TCPConnector
 from utilities.pace_scraper import scraper
+from aiohttp import ClientSession, TCPConnector
+from utilities.async_subprocess import async_subprocess, gather_limitter
 import os
 from aiodownloader import downloader, utils
 from typing import List, Dict
@@ -21,6 +22,8 @@ with open("./Config/config.json") as file:
     data = json.loads(file.read())
     priority = data["priority"]
     debug = data["debug"]
+    download_using = data["downloader"]
+    max_subprocesses = data["max_subprocesses"]
 
 
 def format_float(num) -> str:
@@ -468,7 +471,8 @@ async def automate_scraping(
             if not only_player:
                 ans = input("\ndownload now y/n?: ")
 
-        if ans == "y" and not only_player:
+
+        async def use_aiodownloader():
             if len(links_and_names_and_headers) != 0:
                 print(f"starting all downloads for {var.name} \nPlease Wait.....")
                 jobs = [
@@ -496,7 +500,36 @@ async def automate_scraping(
                 # to avoid too much stdout
                 if automatic_downloads == False:
                     print("Nothing to download")
+        
+        async def use_subprocess(l_n_h: tuple):
+            def get_process(link, name, header) -> async_subprocess:
+                head = f'-H "Referer: {header["Referer"]}" ' if header else ''
+                optional_args = '-k --location '
+                cmd = f'''curl -o "{os.path.join(download_location, name)}" ''' + optional_args + head + link 
+                # print(cmd)
+                query = ["bash", "-c", cmd]
+                return async_subprocess(*query, description=name)
 
+            tasks = []
+            for link, name, header in l_n_h:
+                if link:
+                    tasks.append(get_process(link, name, header))
+                else:
+                    continue
+            if len(tasks) == 0:
+                print('Nothing to download')
+                return
+
+            await gather_limitter(*tasks, max=max_subprocesses)
+
+        if ans == "y" and not only_player:
+            if download_using == 'aiodownloader':
+                x = await use_aiodownloader()
+                if x: return x
+            elif download_using == 'subprocess':
+                await use_subprocess(links_and_names_and_headers)
+            else:
+                print(f'Config: downloader: {download_using} not supported.')
         else:
             if not only_player:
                 write_links(links_and_names_and_headers)
@@ -510,20 +543,19 @@ async def automate_scraping(
             if not only_player and i:
                 print(i)
 
-        if (
-            len(links_and_names_and_headers) == 0
-            or None in links_and_names_and_headers[0]
-        ):  # None when no server in config is available
+        if (len(links_and_names_and_headers) == 0 or \
+            None in links_and_names_and_headers[0]):
+            # None when no server in config is available or there was no download link available for that episode
             return (var.name, None)
         else:
             return (var.name, links_and_names_and_headers[0][1])
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/sorcery-fight-723619"
-    asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 21, None, only_player=False, get_ext_servers=True)
-    )
+    link = "https://www2.kickassanime.rs/anime/violet-evergarden-331106"
+    print(asyncio.get_event_loop().run_until_complete(
+        automate_scraping(link, 4, 5, only_player=False, get_ext_servers=True)
+    ))
     print("\nOMEDETO !!")
 elif False:
 

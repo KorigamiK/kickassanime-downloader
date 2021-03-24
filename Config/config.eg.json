@@ -1,22 +1,24 @@
 {
     "priority": {
         "KICKASSANIMEV2": 2,
-        "KICKASSANIMEX": -3,
+        "KICKASSANIMEX": 2,
         "MAGENTA02": -1,
-        "BETA-SERVER": -1,
-        "BETASERVER3": 2,
-        "HTML5": -1,
-        "MOBILE-V2": -1,
         "MAGENTA13":-2,
+        "BETA-SERVER": -1,
+        "MOBILE-V2": -1,
+        "HTML5": -1,
         "A-KICKASSANIME": -1,
-        "THETA-ORIGINAL": -1,
-        "KICKASSANIME1": -1
+        "KICKASSANIME1": -1,
+        "BETASERVER3": 2
     },
+    "max_subprocesses": 5,
+    "downloader": "subprocess",
+    "not used downloader": "aiodownloader",
     "not_used_servers":{
         "DR.HOFFMANN": -1,
         "THETA-ORIGINAL-V4": 0,
         "ORIGINAL-QUALITY-V2":0,
-        "THETA-ORIGINAL": 0
+        "THETA-ORIGINAL": -1
     },
     "debug": false
 }
