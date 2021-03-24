@@ -19,27 +19,32 @@ async def async_subprocess(
     std_inputs: list = [],
     loop: asyncio.AbstractEventLoop = None,
     description="Process",
+    print_stdin=True,
+    print_stdout=True,
+    print_stderr=True,
 ):
     process = await asyncio.create_subprocess_exec(
         *cmd_args, stderr=PIPE, stdin=PIPE, loop=loop, stdout=PIPE
     )
 
-    async def _read_stream(stream: asyncio.StreamReader, stream_type: str):
+    async def _read_stream(stream: asyncio.StreamReader, stream_type: str, print_pipe=True):
         """ Breaks if an empty line is the output of error """
         while True:
             line = await stream.readline()
             # await asyncio.sleep(.1)
             if line:
-                print(f"[{description}] {stream_type}: {line.decode('utf-8').strip()}")
+                if print_pipe:
+                    print(f"[{description}] {stream_type}: {line.decode('utf-8').strip()}")
             else:
                 break
 
-    async def _write_stream(stream: asyncio.StreamWriter, inputs: list):
+    async def _write_stream(stream: asyncio.StreamWriter, inputs: list, print_pipe=True):
         """waits 1 sec for each input"""
         for input in inputs:
             await asyncio.sleep(1)
             buf = f"{input}\n".encode()
-            print(f"[{description}] stdin: {input}")
+            if print_pipe:
+                print(f"[{description}] stdin: {input}")
 
             stream.write(buf)
             await stream.drain()
@@ -49,9 +54,9 @@ async def async_subprocess(
     stdin_stream = process.stdin
     try:
         await asyncio.gather(
-            _read_stream(stdout_stream, "stdout"),
-            _read_stream(stderr_stream, "stderr"),
-            _write_stream(stdin_stream, std_inputs),
+            _read_stream(stdout_stream, "stdout", print_pipe=print_stdout),
+            _read_stream(stderr_stream, "stderr", print_pipe=print_stderr),
+            _write_stream(stdin_stream, std_inputs, print_pipe=print_stdin),
         )
     except Exception as e:
         print(f"[{description}] ERROR: {e}")

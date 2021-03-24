@@ -505,10 +505,14 @@ async def automate_scraping(
             def get_process(link, name, header) -> async_subprocess:
                 head = f'-H "Referer: {header["Referer"]}" ' if header else ''
                 optional_args = '-k --location '
-                cmd = f'''curl -o "{os.path.join(download_location, name)}" ''' + optional_args + head + link 
-                # print(cmd)
-                query = ["bash", "-c", cmd]
-                return async_subprocess(*query, description=name)
+                path = os.path.join(download_location, name)
+                cmd = f'''curl -o "{path}" ''' + optional_args + head + link
+                if os.name == 'nt':
+                    query = [r'C:\Windows\System32\cmd.exe']
+                    return async_subprocess(*query, std_inputs=[cmd, 'exit'], print_stdin=False, print_stdout=False, description=name)
+                else:
+                    query = ["bash", "-c", cmd]
+                    return async_subprocess(*query, description=name)
 
             tasks = []
             for link, name, header in l_n_h:
@@ -552,9 +556,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/violet-evergarden-331106"
+    link = "https://www2.kickassanime.rs/anime/shingeki-no-kyojin-the-final-season-615098"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 4, 5, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 13, 13, only_player=False, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:
