@@ -514,12 +514,8 @@ async def automate_scraping(
                     query = ["bash", "-c", cmd]
                     return async_subprocess(*query, description=name)
 
-            tasks = []
-            for link, name, header in l_n_h:
-                if link:
-                    tasks.append(get_process(link, name, header))
-                else:
-                    continue
+            tasks = [get_process(link, name, header) for link, name, header in l_n_h if link]
+
             if len(tasks) == 0:
                 print('Nothing to download')
                 return
@@ -556,9 +552,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/shingeki-no-kyojin-the-final-season-615098"
+    link = "https://www2.kickassanime.rs/anime/violet-evergarden-331106"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 13, 13, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 2, 2, only_player=False, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:

@@ -108,7 +108,7 @@ def play(link):
     try:
         assert link is not None
         if operating_system == 'nt':
-            query = f'vlc --play-and-exit -f --one-instance --no-playlist-enqueue "{link}"'
+            query = f'vlc --play-and-exit -f --http-referrer="https://betaplayer.life/api/embed/1615556106095" --one-instance --no-playlist-enqueue "{link}"'
             subprocess.run(query, shell=True)
         else:
             cmd = ["mpv", f'"{link}"', "--http-header-fields='Referer: https://betaplayer.life/api/embed/1615556106095'"] # I know hardcoding is bad
