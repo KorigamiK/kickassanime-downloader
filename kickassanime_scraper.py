@@ -271,7 +271,7 @@ class player:
             return None
 
     async def get_player_embed_links(self, player_link: str) -> list:
-        """returns list[{"name": None, "src": None}] """
+        """returns list[{"name": str, "src": str}] """
         if "axplayer/player" in player_link:  # happens for older anime
             return [
                 {
@@ -481,13 +481,12 @@ async def automate_scraping(
                 tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
                 if len(jobs) != 0:
                     try:
-                        if (
-                            not automatic_downloads
-                        ):  # will not get progress bars for automatic downloads to speed up the proceess
+                        # will not get progress bars for automatic downloads to speed up the proceess
+                        if (not automatic_downloads):
                             await utils.multi_progress_bar(jobs)
                         await asyncio.gather(*tasks_3, return_exceptions=False)
                     except Exception as e:
-                        print(e)
+                        print(str(e))
                         if debug:
                             print(links_and_names_and_headers)
                         return (var.name, None)
@@ -552,9 +551,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/violet-evergarden-331106"
+    link = "https://www2.kickassanime.rs/anime/tonikawa-over-the-moon-for-you-700200/episode-01-251220"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 2, 2, only_player=False, get_ext_servers=True)
+        automate_scraping(link, None, None, only_player=False, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:

@@ -14,8 +14,9 @@ with open("./Config/watch_config.json") as file:
     priority = data["priority"]
     ext_priority = data["ext_priority"]
 
+names = list(priority.keys())
 
-async def get_watch_link(anime_link, ep_num, session, ext_only=False):
+async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_server: str=''):
     var = kickass(session, anime_link)
     print(var.name)
     # dont touch this as its a generator
@@ -41,8 +42,6 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False):
     if len(player_links) > 1:  # just some experimental stuff
         print(f"number of player links is {len(player_links)}")
 
-    available = []
-    names = list(priority.keys())
     embed_links = None
 
     async def try_ext(index=0):
@@ -74,25 +73,34 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False):
     else:
         return await try_ext()
 
+    available = []
     if embed_links is not None and not ext_only:
         for i in embed_links:
             if i["name"] in names:
                 available.append(i)
 
         if len(available) == 0:
-            print("no player available")
-            return None
+            print("No player available")
+            return await try_ext()
 
         flag = 999
         final = None
         for i in available:
-            if names.index(i["name"]) < flag:
-                flag = names.index(i["name"])
+            if i["name"] == custom_server:
                 final = i
+                break
+            elif names.index(i["name"]) < flag:
+                flag = names.index(i["name"])
+                final = i            
             else:
                 continue
+        
+        if custom_server and (final["name"] != custom_server): #if no custom server then it is an empty string
+            print(f"Server {custom_server} not available.")
+            # print(available)
 
         print(final["name"])
+        # print([i["name"] for i in embed_links])
         link = await player_scraper.get_from_server(final["name"], final["src"])
         if priority[final["name"]]:
             return link[1][priority[final["name"]]]  # link is like [server_name, link]
@@ -119,7 +127,7 @@ def play(link):
         exit()
 
 
-async def watch(episode, query=None, link=None, option_number=None, ext_only=False):
+async def watch(episode, query=None, link=None, option_number=None, ext_only=False, custom_server=''):
 
     async with ClientSession(connector=TCPConnector(ssl=False)) as session:
         if (not link) and query:
@@ -131,18 +139,19 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
             print("No link or query supplied")
             return None
         print(link)
-        player_link = await get_watch_link(link, episode, session, ext_only)
+        player_link = await get_watch_link(link, episode, session, ext_only, custom_server=custom_server)
         # print(player_link)
         play(player_link)
 
 
 if __name__ == "__main__":
-    episode = 2
+    episode = 1
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'jojo'
-    opt = 1
+    query = 'violet'
+    opt = None or None
     flag = False
+    server = '' or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(
-        watch(episode, link=link, query=query, option_number=opt, ext_only=flag)
+        watch(episode, link=link, query=query, option_number=opt, ext_only=flag, custom_server=server)
     )

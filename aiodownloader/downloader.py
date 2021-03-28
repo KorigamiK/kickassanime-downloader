@@ -116,6 +116,9 @@ class aiodownloader_error(Exception):
 
     def __str__(self):
         return f'Response code {self.code} {self.message}'
+    
+    def __repr__(self):
+        return f'Response code {self.code} {self.message}'
         
 class Handler:
     """
