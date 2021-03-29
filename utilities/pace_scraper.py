@@ -145,7 +145,7 @@ class scraper:
                 flag = False
             except:
                 print(j, i.text)
-            dow_urls_allqualities += ["https://haloani.ru/Kickassanimev2/" + i["href"]]
+            dow_urls_allqualities += ["/".join(link.split('/')[:-1]) + "/" + i["href"]]
 
         if flag == True:
             setattr(self, "quality", int(input("Enter quality number: ")))

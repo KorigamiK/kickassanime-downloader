@@ -384,12 +384,18 @@ class player:
         return ret
 
     @staticmethod
-    async def search(query: str, session: ClientSession, option: int = None) -> dict:
+    async def search(query: str, session: ClientSession=None, option: int = None) -> dict:
         """ returns dict[name, slug, image] """
+        flag = False
+        if session is None:
+            session = await ClientSession().__aenter__()
+            flag = True
         api_url = "https://www2.kickassanime.rs/api/anime_search"
         data = {"keyword": query}
         async with session.post(api_url, data=data) as resp:
             data = await resp.json()
+        if flag:
+            await session.close() # for one tiime use
         if len(data) != 0:
             if option is not None:
                 return data[option]
@@ -486,7 +492,7 @@ async def automate_scraping(
                             await utils.multi_progress_bar(jobs)
                         await asyncio.gather(*tasks_3, return_exceptions=False)
                     except Exception as e:
-                        print(str(e))
+                        print(e)
                         if debug:
                             print(links_and_names_and_headers)
                         return (var.name, None)
@@ -553,7 +559,7 @@ async def automate_scraping(
 if __name__ == "__main__":
     link = "https://www2.kickassanime.rs/anime/tonikawa-over-the-moon-for-you-700200/episode-01-251220"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, None, None, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 1, 1, only_player=False, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:
