@@ -324,10 +324,16 @@ class player:
 
         if server_name == "PINK-BIRD":
             script_tag: str = get_script()
-            return [server_name, bs(script_tag, "html.parser").find("source")["src"]]
-
+            try:
+                return [server_name, bs(script_tag, "html.parser").find("source")["src"]]
+            except TypeError:
+                print(f'Bad player link for {server_name}')
+                return [server_name, None]
         elif server_name == "SAPPHIRE-DUCK":
             script_tag: bytes = get_script()
+            if not script_tag:
+                print(f'Bad player link for {server_name}')
+                return [server_name, None]
             sap_duck = bs(script_tag, "html.parser")
             java_script = str(sap_duck.select_one("script"))
 
