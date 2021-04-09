@@ -1,5 +1,5 @@
 #/bin/bash
-pwd
+#pwd
 read -p "Enter args: " word
 python3 play.py $word
 echo "You entered: $word"
