@@ -32,6 +32,13 @@ parser.add_argument(
     help="Optional switch to play only from ext servers (its faster if it works). Needs no arguments",
 )
 
+parser.add_argument(
+    "--stop",
+    "-s",
+    action="store_true",
+    help="Optional switch to stop the script after searching without playing anything. Will also display the url of the anime.",
+)
+
 def parse_server_name(arg):
     if arg:
         try:
@@ -63,6 +70,7 @@ opt = args.opt
 ext_only = args.ext
 custom_server = args.custom_server
 to_list = args.list
+stop = args.stop
 
 if to_list:
     print('Possible player servers are:')
@@ -71,5 +79,5 @@ if to_list:
     exit()
 
 asyncio.get_event_loop().run_until_complete(
-    watch(episode, link=link, query=query, option_number=opt, ext_only=ext_only, custom_server=custom_server)
+    watch(episode, link=link, query=query, option_number=opt, ext_only=ext_only, custom_server=custom_server, stop=stop)
 )

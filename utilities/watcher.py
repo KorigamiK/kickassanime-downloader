@@ -127,7 +127,7 @@ def play(link):
         exit()
 
 
-async def watch(episode, query=None, link=None, option_number=None, ext_only=False, custom_server=''):
+async def watch(episode, query=None, link=None, option_number=None, ext_only=False, custom_server='', stop=False):
 
     async with ClientSession(connector=TCPConnector(ssl=False)) as session:
         if (not link) and query:
@@ -142,6 +142,7 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
             print("No link or query supplied")
             return None
         print(link)
+        if stop: return None
         player_link = await get_watch_link(link, episode, session, ext_only, custom_server=custom_server)
         # print(player_link)
         play(player_link)
