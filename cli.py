@@ -1,12 +1,18 @@
 from selectmenu import SelectMenu
 from kickassanime_scraper import automate_scraping, player
 from automatic_checker import download_location, main as checker
-from sys import platform
-import os
+from sys import platform, argv
+from os import system
 import asyncio
 
 base_url = "https://www2.kickassanime.rs"
 
+if len(argv) > 1:
+    if platform.startswith("win"):
+        system(f'python play.py {" ".join(argv[1:])}')
+    else:
+        system(f'python3 play.py {" ".join(argv[1:])}')
+    exit()
 
 async def search_and_download():
     query = input("Enter anime name: ")
@@ -28,9 +34,9 @@ async def search_and_download():
 
 async def play():
     if platform.startswith("win"):
-        os.system("play.bat")
+        system("play.bat")
     else:
-        os.system("bash play.sh")
+        system("bash play.sh")
 
 
 async def auto_update():
