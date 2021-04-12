@@ -132,6 +132,9 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
     async with ClientSession(connector=TCPConnector(ssl=False)) as session:
         if (not link) and query:
             dict_info = await player.search(query, session, option=option_number)
+            if not dict_info:
+                print('Check for typos in the query. Exiting...')
+                return None
             link = "https://www2.kickassanime.rs" + dict_info["slug"]
         elif (query is None) and link:
             pass

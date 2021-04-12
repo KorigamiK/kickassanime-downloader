@@ -399,17 +399,17 @@ class player:
         api_url = "https://www2.kickassanime.rs/api/anime_search"
         data = {"keyword": query}
         async with session.post(api_url, data=data) as resp:
-            data = await resp.json()
+            resp_data = await resp.json()
         if flag:
-            await session.close() # for one tiime use
-        if len(data) != 0:
+            await session.close() # for one time use
+        if len(resp_data) != 0:
             if option is not None:
-                return data[option]
+                return resp_data[option]
             else:
-                for j, i in enumerate(data):
+                for j, i in enumerate(resp_data):
                     print(j, i["name"])
                 option = int(input("Enter anime number: "))
-                return data[option]
+                return resp_data[option]
         else:
             print(f"No anime avaiable for {query}")
             return None
