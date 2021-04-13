@@ -20,8 +20,14 @@ async def search_and_download():
     print(data["name"])
     print("Skip episode numbers to default to first or latest episode")
     link = base_url + data["slug"]
-    ep_start = int(input("Enter Episode to start from: ")) or None
-    ep_end = int(input("Enter Episode to end from: ")) or None
+    try:
+        ep_start = int(input("Enter Episode to start from: "))
+    except ValueError:
+        ep_start = None
+    try:
+        ep_end = int(input("Enter Episode to end from: "))
+    except:
+        ep_end = None
     await automate_scraping(
         link,
         ep_start,
