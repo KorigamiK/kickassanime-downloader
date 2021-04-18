@@ -10,8 +10,12 @@
     },
     "ext_priority": [
         "Vidstreaming",
-    	"Gogo server",
+        "Gogo server",
         "Vidcdn"
+    ],
+    "mpv_args": [
+        "--vid=4",
+        "--aid=5"
     ],
     "unused_ext": [
         "Mp4Upload",

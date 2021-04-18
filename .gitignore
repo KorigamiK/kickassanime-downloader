@@ -11,3 +11,4 @@ watch_config.json
 bad.py
 *.pyc
 tempCodeRunnerFile.py
+*.ts

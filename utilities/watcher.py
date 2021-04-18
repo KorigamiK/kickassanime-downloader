@@ -13,7 +13,8 @@ with open("./Config/watch_config.json") as file:
     data = json.loads(file.read())
     priority = data["priority"]
     ext_priority = data["ext_priority"]
-
+    mpv_args = data["mpv_args"]
+    
 names = list(priority.keys())
 
 async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_server: str=''):
@@ -119,7 +120,7 @@ def play(link):
             query = f'vlc --play-and-exit -f --http-referrer="https://betaplayer.life/" --one-instance --no-playlist-enqueue "{link}"'
             subprocess.run(query, shell=True)
         else:
-            cmd = ["mpv", f'"{link}"', "--http-header-fields='Referer: https://betaplayer.life/'"] # I know hardcoding is bad
+            cmd = ["mpv", f'"{link}"', "--http-header-fields='Referer: https://betaplayer.life/'"] + mpv_args # I know hardcoding is bad
             subprocess.run(' '.join(cmd), shell=True)
             # print(' '.join(cmd))
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
