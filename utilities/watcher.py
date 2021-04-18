@@ -116,11 +116,12 @@ def play(link):
     try:
         assert link is not None
         if operating_system == 'nt':
-            query = f'vlc --play-and-exit -f --http-referrer="https://betaplayer.life/api/embed/1615556106095" --one-instance --no-playlist-enqueue "{link}"'
+            query = f'vlc --play-and-exit -f --http-referrer="https://betaplayer.life/" --one-instance --no-playlist-enqueue "{link}"'
             subprocess.run(query, shell=True)
         else:
-            cmd = ["mpv", f'"{link}"', "--http-header-fields='Referer: https://betaplayer.life/api/embed/1615556106095'"] # I know hardcoding is bad
+            cmd = ["mpv", f'"{link}"', "--http-header-fields='Referer: https://betaplayer.life/'"] # I know hardcoding is bad
             subprocess.run(' '.join(cmd), shell=True)
+            # print(' '.join(cmd))
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
             # process.wait()
     except:
@@ -152,8 +153,8 @@ if __name__ == "__main__":
     episode = 1
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'violet'
-    opt = None or None
+    query = 'vivy'
+    opt = 0
     flag = False
     server = '' or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(

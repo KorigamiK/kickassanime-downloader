@@ -320,7 +320,7 @@ class player:
         async def get_list(bs_soup):
             for i in bs_soup.find_all("script"):
                 if "file" in str(i):
-                    return json.loads(re.findall(r"\[{.*}]", str(i))[0])
+                    return json.loads(re.findall(r"\[{.*}]", str(i))[0].replace('\\', '\\\\').replace('"', '\"'))
 
         if server_name == "PINK-BIRD":
             script_tag: str = get_script()
@@ -346,7 +346,7 @@ class player:
             links_list = await get_list(soup)
             # for i in links_list:
             #     res += "\t\t{i['label']}: {i['file']}\n"
-            res = {i["label"]: f"{i['file'].replace(' ', '%20')}" for i in links_list}
+            res = {i["label"]: i['file'].replace(' ', '%20').replace('\\', '') for i in links_list}
             return [server_name, res]
 
         elif server_name == "BETA-SERVER":
@@ -356,7 +356,7 @@ class player:
                 .replace("label", r'"label"')
             )
             links_list = json.loads(re.search(r"\[\{.+\}\]", script_tag).group(0))
-            res = {i["label"].strip(): i["file"] for i in links_list}
+            res = {i["label"].strip(): i["file"].replace('\\', '') for i in links_list}
             return [server_name, res]
 
         elif server_name == "DR.HOFFMANN":
