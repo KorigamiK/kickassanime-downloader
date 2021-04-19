@@ -116,12 +116,12 @@ def play(link, encode):
         print(link)
     if encode and 'm3u8' in link:
         print('Run this to download the stream ->')
-        print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]}] -c copy out.ts')
+        print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]} -c copy out.ts')
         print('Run this to encode the stream ->')
         print(f'ffmpeg -i out.ts -c:v libx265 -c:a copy -x265-params crf=25 final.mp4')
         print('Change them however you like')
         return None
-        
+
     elif encode:
         print('Cannot encode non m3u8 episodes. Try disabling the flag')
         return None
