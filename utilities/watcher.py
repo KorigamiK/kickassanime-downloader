@@ -111,9 +111,20 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
         return await try_ext()
 
 
-def play(link):
+def play(link, encode):
     if debug:
         print(link)
+    if encode and 'm3u8' in link:
+        print('Run this to download the stream ->')
+        print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]}] -c copy out.ts')
+        print('Run this to encode the stream ->')
+        print(f'ffmpeg -i out.ts -c:v libx265 -c:a copy -x265-params crf=25 final.mp4')
+        print('Change them however you like')
+        return None
+        
+    elif encode:
+        print('Cannot encode non m3u8 episodes. Try disabling the flag')
+        return None
     try:
         assert link is not None
         if operating_system == 'nt':
@@ -129,7 +140,7 @@ def play(link):
         exit()
 
 
-async def watch(episode, query=None, link=None, option_number=None, ext_only=False, custom_server='', stop=False):
+async def watch(episode, query=None, link=None, option_number=None, ext_only=False, custom_server='', stop=False, encode=False):
 
     async with ClientSession(connector=TCPConnector(ssl=False)) as session:
         if (not link) and query:
@@ -147,7 +158,7 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
         if stop: return None
         player_link = await get_watch_link(link, episode, session, ext_only, custom_server=custom_server)
         # print(player_link)
-        play(player_link)
+        play(player_link, encode)
 
 
 if __name__ == "__main__":
@@ -159,5 +170,5 @@ if __name__ == "__main__":
     flag = False
     server = '' or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(
-        watch(episode, link=link, query=query, option_number=opt, ext_only=flag, custom_server=server)
+        watch(episode, link=link, query=query, option_number=opt, ext_only=flag, custom_server=server, encode=False)
     )

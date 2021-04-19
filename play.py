@@ -39,6 +39,12 @@ parser.add_argument(
     help="Optional switch to stop the script after searching without playing anything. Will also display the url of the anime.",
 )
 
+parser.add_argument(
+    "--encode",
+    action="store_true",
+    help="Optional switch to print ffmpeg command to encode the stream",
+)
+
 def parse_server_name(arg):
     if arg:
         try:
@@ -71,6 +77,7 @@ ext_only = args.ext
 custom_server = args.custom_server
 to_list = args.list
 stop = args.stop
+encode = args.encode
 
 if to_list:
     print('Possible player servers are:')
@@ -79,5 +86,5 @@ if to_list:
     exit()
 
 asyncio.get_event_loop().run_until_complete(
-    watch(episode, link=link, query=query, option_number=opt, ext_only=ext_only, custom_server=custom_server, stop=stop)
+    watch(episode, link=link, query=query, option_number=opt, ext_only=ext_only, custom_server=custom_server, stop=stop, encode=encode)
 )
