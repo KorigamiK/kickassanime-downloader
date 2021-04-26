@@ -29,5 +29,6 @@
         "Thevideo",
         "YourUpload"
     ],
+    "system": "win",
     "following are the qualities that can be keys. Dont touch the null ones": "['720p', '360p', '180p', 'Auto']"
 }

@@ -1,6 +1,5 @@
 import sys
 from os import path
-from os import name as operating_system
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from kickassanime_scraper import kickass, player, debug
@@ -14,7 +13,11 @@ with open("./Config/watch_config.json") as file:
     priority = data["priority"]
     ext_priority = data["ext_priority"]
     mpv_args = data["mpv_args"]
-    
+    try:
+        operating_system = data["system"]
+    except KeyError:
+        from os import name as operating_system
+        
 names = list(priority.keys())
 
 async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_server: str=''):
