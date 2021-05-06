@@ -119,9 +119,9 @@ def play(link, encode):
         print(link)
     if encode and 'm3u8' in link:
         print('Run this to download the stream ->')
-        print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]} -c copy out.ts')
+        print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]} -c:v libx265 -c:a copy -preset fast -x265-params crf=26 out.ts')
         print('Run this to encode the stream ->')
-        print(f'ffmpeg -i out.ts -c:v libx265 -c:a copy -x265-params crf=25 final.mp4')
+        print(f'ffmpeg -i out.ts -c:v copy -c:a copy final.mp4')
         print('Change them however you like')
         return None
 

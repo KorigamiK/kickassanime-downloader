@@ -14,7 +14,7 @@
         "Vidcdn"
     ],
     "mpv_args": [
-        "--vid=4",
+        "--vid=3",
         "--aid=5"
     ],
     "unused_ext": [
