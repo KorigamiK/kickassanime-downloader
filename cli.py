@@ -1,11 +1,23 @@
-from selectmenu import SelectMenu
 from kickassanime_scraper import automate_scraping, player
 from automatic_checker import download_location, main as checker
 from sys import platform, argv
 from os import system
 import asyncio
+try:
+    from selectmenu import SelectMenu
+except ImportError:
+    print('\nSelectmenu not installed, using basic menu layout.')
+    class SelectMenu:
+        def add_choices(self, choices: list):
+            self.choices = choices
 
-base_url = "https://www2.kickassanime.rs"
+        def select(self, prompt=None):
+            print(prompt or "What would you like?")
+            for j, i in enumerate(self.choices): print(j, i)
+            print()
+            return self.choices[int(input('Enter choice number: '))]
+
+base_url = "https://www2.kickassanime.lol"
 
 if len(argv) > 1:
     if platform.startswith("win"):

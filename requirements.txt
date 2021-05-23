@@ -14,5 +14,5 @@ tqdm
 typing-extensions
 urllib3
 yarl
-SelectMenu
 requests
+SelectMenu
