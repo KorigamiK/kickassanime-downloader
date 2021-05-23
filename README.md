@@ -1,6 +1,9 @@
 # Kickassanime-downloader
 A nice asynchronous anime downloader and more for kickassanime.
+## To set up the command alias:
+[For windows](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Windows)
 
+[For Linux/Mac](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Linux-Mac)
 ## Some usage examples:
 
 #### 1. Auto update your ongoing series for new episodes
