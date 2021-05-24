@@ -206,7 +206,7 @@ class kickass:
         if len(available) == 0:
             print(f"No available server in config.json for episode {format_float(episode_number)}")
             print(f"Try adding {tmp_serv} to the config file")
-            return (None, file_name)
+            return (None, file_name, None)
 
         await asyncio.sleep(0)
         flag = 999
