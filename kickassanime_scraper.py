@@ -24,7 +24,7 @@ with open("./Config/config.json") as file:
     debug = data["debug"]
     download_using = data["downloader"]
     max_subprocesses = data["max_subprocesses"]
-
+    WEBSITE_DOMAIN = data["WEBSITE_DOMAIN"]
 
 def format_float(num) -> str:
     return f"{num:04.1f}".rstrip("0").rstrip(".")
@@ -38,6 +38,7 @@ class kickass:
         arbitrary_name=False,
         episode_link=None,
     ):
+        url = url.replace('.lol', WEBSITE_DOMAIN)
         if url.endswith("/"):
             url = url[:-1]
         else:
@@ -563,9 +564,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/tonikawa-over-the-moon-for-you-700200/episode-01-251220"
+    link = "https://www2.kickassanime.rs/anime/shingeki-no-kyojin-the-final-season-615098"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 1, 1, only_player=False, get_ext_servers=True)
+        automate_scraping(link, None, 1, only_player=False, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:
