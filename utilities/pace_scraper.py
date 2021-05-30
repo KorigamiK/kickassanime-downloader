@@ -206,7 +206,7 @@ class scraper:
             soup = bs(requests.get(link).text, "html.parser")
         else:
             soup = await self.get_method(link, self.session)
-        script = soup.select('script[type="text/javascript"]')[2]
+        script = [i for i in soup.select('script[type="text/javascript"]') if 'document.write' in str(i)][0]
         res = base64.b64decode(re.search(r'decode\("(.+)"\)', str(script)).group(1))
         html = bs(res, 'html.parser')
         link_and_quality = [(i['href'], i.text) for i in html.find_all('a')]
