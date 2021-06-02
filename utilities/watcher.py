@@ -168,7 +168,7 @@ if __name__ == "__main__":
     episode = 1
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'vivy'
+    query = 'princess'
     opt = 0
     flag = False
     server = '' or 'PINK-BIRD'

@@ -377,7 +377,7 @@ class player:
 
     async def get_ext_server(self, ext_link, server_name):
         soup = await fetch(ext_link, self.session)
-        url = "http:" + re.search(r"(\/.+)'", str(soup.select("script")[3])).group(1)
+        url = "http:" + re.search(r"(\/.+)'",[str(i) for i in soup.select('script') if 'https://gogo-play.net/' in str(i)][0]).group(1)
         ret = None
         if server_name == "Vidcdn" or server_name == "Gogo server":
             ret = await self._ext_gogo(url)
