@@ -400,7 +400,8 @@ class player:
         api_url = "https://www2.kickassanime.rs/api/anime_search"
         data = {"keyword": query}
         async with session.post(api_url, data=data) as resp:
-            resp_data = await resp.json()
+            print(await resp.text())
+            resp_data = await resp.json(content_type=None)
         if flag:
             await session.close() # for one time use
         if len(resp_data) != 0:

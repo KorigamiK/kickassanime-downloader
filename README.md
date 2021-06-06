@@ -1,5 +1,8 @@
 # Kickassanime-downloader
 A nice asynchronous anime downloader and more for kickassanime.
+
+## ```Currently not working due to new cloudflare antibot protection added to the site```
+
 ## To set up the command alias:
 [For windows](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Windows)
 
