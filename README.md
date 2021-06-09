@@ -1,7 +1,7 @@
 # Kickassanime-downloader
 A nice asynchronous anime downloader and more for kickassanime.
 
-## ```Currently not working due to new cloudflare antibot protection added to the site```
+## ```If you encounter any problems due to repeated requests and cloudflare protection, wait for some time and then run the script again.```
 
 ## To set up the command alias:
 [For windows](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Windows)
@@ -13,9 +13,9 @@ A nice asynchronous anime downloader and more for kickassanime.
 ![autoupdate](/example/autoupdate.gif)
 
 #### 2. Play any episode of any show
-![splay episode](/example/play_ep.gif)
+![play episode](/example/play_ep.gif)
 
 #### 3. Dowload a range of episodes of any show
-![sutoupdate](/example/search_and_download.gif)
+![search and download](/example/search_and_download.gif)
 
 Make sure to correctly create the config files or remove the `.eg` from the file names in the `config` folder.

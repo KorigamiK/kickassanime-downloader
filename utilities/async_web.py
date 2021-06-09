@@ -3,8 +3,9 @@ from bs4 import BeautifulSoup as bs
 from ssl import SSLCertVerificationError
 import os
 from contextlib import redirect_stderr
+# import cloudscraper
 
-
+# scraper = cloudscraper.create_scraper(allow_brotli=False)
 async def fetch(url, client) -> bs:
     try:
         f = open(os.devnull, "w")
@@ -13,7 +14,7 @@ async def fetch(url, client) -> bs:
                 # print(resp.status)
                 html = await resp.read()
                 return bs(html, "html.parser")
-
+        # return bs(scraper.get(url).text, "html.parser")
     except SSLCertVerificationError as e:
         print("Error handled", e)
 
