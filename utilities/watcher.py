@@ -169,7 +169,7 @@ if __name__ == "__main__":
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
     query = 'princess'
-    opt = 0
+    opt = None
     flag = False
     server = '' or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(
