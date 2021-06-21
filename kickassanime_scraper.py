@@ -519,7 +519,7 @@ async def automate_scraping(
                 head = f'-H "Referer: {header["Referer"]}" ' if header else ''
                 optional_args = '-k --location '
                 path = os.path.join(download_location, name)
-                cmd = f'''curl -o "{path}" ''' + optional_args + head + link
+                cmd = f'''curl -o "{path}" ''' + optional_args + head + f'"{link}"'
                 if os.name == 'nt':
                     query = [r'C:\Windows\System32\cmd.exe']
                     return async_subprocess(*query, std_inputs=[cmd, 'exit'], print_stdin=False, print_stdout=False, description=name)

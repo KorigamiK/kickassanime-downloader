@@ -13,8 +13,8 @@
         "BETASERVER3": 2
     },
     "max_subprocesses": 5,
-    "downloader": "subprocess",
-    "not used downloader": "aiodownloader",
+    "downloader": "aiodownloader",
+    "not used downloader": "subprocess",
     "not_used_servers":{
         "DR.HOFFMANN": -1,
         "THETA-ORIGINAL-V4": 0,
