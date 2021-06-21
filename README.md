@@ -1,6 +1,7 @@
 # Kickassanime Downloader
-A nice nd fast asynchronous anime downloader, streamer and more for kickassanime.
+A nice nd fast asynchronous anime downloader, streamer and more for kickassanime. 
 
+[Here's a demo](#some-usage-examples) of this tool.
 
 ## Installation :
 
@@ -31,6 +32,45 @@ The setup is a little tedious at the moment but I might make a nice installable 
 1. [For windows](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Windows)
 
 2. [For Linux/Mac](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Linux-Mac)
+
+## Usage :
+
+1. Run the alias with no commands/arguments or just `python cli.py` to get the menu of all the actions you have.
+
+2. Run the alias with commands to stream any anime that you want. `kaa --help` or `python cli.py --help` for list of all the commands.
+
+3. Here's the out of the above command: 
+```
+$ kaa -h 
+
+usage: play.py [-h] [--list] [--ep EP] [--url URL] [--opt OPT] [--ext]
+               [--stop] [--encode] [--custom_server [CUSTOM_SERVER]]
+               [name [name ...]]
+
+play anime directly
+
+positional arguments:
+  name                  Name of the anime to search
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --list, -L            Optional switch to list available player servers (not
+                        ext) with their index
+  --ep EP, -e EP        Episode number. Default is the latest episode.
+  --url URL, -u URL     Optional kickass anime url
+  --opt OPT, -o OPT     Optional way to select search result number.
+  --ext                 Optional switch to play only from ext servers (its
+                        faster if it works). Needs no arguments
+  --stop, -s            Optional switch to stop the script after searching
+                        without playing anything. Will also display the url of
+                        the anime.
+  --encode              Optional switch to print ffmpeg command to encode the
+                        stream
+  --custom_server [CUSTOM_SERVER], -c [CUSTOM_SERVER]
+                        Name of the player/server you want or the INDEX number
+                        in the watch_config priority dictionary. Overrides the
+                        current priority.
+```
 
 ## FAQ :
 
