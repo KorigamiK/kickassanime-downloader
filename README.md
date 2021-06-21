@@ -1,5 +1,5 @@
 # Kickassanime Downloader
-A nice nd fast asynchronous anime downloader, streamer and more for kickassanime. 
+A nice and fast asynchronous anime downloader, streamer and more for kickassanime. 
 
 [Here's a demo](#some-usage-examples) of this tool.
 
