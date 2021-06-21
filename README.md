@@ -19,7 +19,7 @@ The setup is a little tedious at the moment but I might make a nice installable 
 
 6. Navigate to your download directory and navigate to the `Config` folder (`~/Documents/kickassanime-downloader/Config` for example). 
 
-7. Rename all the `.eg.json` and remove the `.eg` from the file name. Open each one of them and adjust the configurations as you want.
+7. Rename all the `.eg.json` and remove the `.eg` from the file name. Open each one of them and adjust the configurations as you want. Refer to [Config section.](#config)
 
 
 8. Setup the command line aliases [from the wiki](#to-set-up-the-command-alias) or run the command line interface directly by running `python cli.py` .
@@ -32,6 +32,17 @@ The setup is a little tedious at the moment but I might make a nice installable 
 1. [For windows](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Windows)
 
 2. [For Linux/Mac](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Linux-Mac)
+
+
+## Config :
+
+1.  The quality of downloads from servers can be adjusted in the `config.json` or from example `~/Documents/kickassanime-downloader/Config/config.json`
+
+2. The numbers for each of the servers refer to the qualities in the order in which they appear on the website.
+
+3. For example, for KICKASSANIMEX the numbers would refer to the qualities like this:
+
+    ![qualities](/example/quality_selection.jpg)
 
 ## Usage :
 
