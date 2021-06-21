@@ -15,4 +15,3 @@ typing-extensions
 urllib3
 yarl
 requests
-SelectMenu
