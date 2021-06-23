@@ -29,6 +29,7 @@ with open("./Config/config.json") as file:
 def format_float(num) -> str:
     return f"{num:04.1f}".rstrip("0").rstrip(".")
 
+DOMAIN_REGEX = re.compile(r'\.(lol|rs|ro)', re.IGNORECASE)
 
 class kickass:
     def __init__(
@@ -38,7 +39,7 @@ class kickass:
         arbitrary_name=False,
         episode_link=None,
     ):
-        url = url.replace('.lol', WEBSITE_DOMAIN)
+        url = DOMAIN_REGEX.sub(WEBSITE_DOMAIN, url)
         if url.endswith("/"):
             url = url[:-1]
         else:
@@ -74,7 +75,7 @@ class kickass:
         except ValueError:  # for ovas and stuff
             self.last_episode = 0
 
-        return ("https://www2.kickassanime.rs" + i["slug"] for i in results)
+        return (DOMAIN_REGEX.sub(WEBSITE_DOMAIN, "https://www2.kickassanime.rs") + i["slug"] for i in results)
 
     async def get_embeds(self, episode_link=None) -> dict:
         """player, download, ep_num, ext_servers, episode_countdown
@@ -377,7 +378,7 @@ class player:
 
     async def get_ext_server(self, ext_link, server_name):
         soup = await fetch(ext_link, self.session)
-        url = "http:" + re.search(r"(\/.+)'",[str(i) for i in soup.select('script') if 'https://gogo-play.net/' in str(i)][0]).group(1)
+        url = "http:" + re.search(r"(\/.+)'",[str(i) for i in soup.select('script') if 'https://gogo-play.net/' in str(i) or 'streamani.net' in str(i)][0]).group(1)
         ret = None
         if server_name == "Vidcdn" or server_name == "Gogo server":
             ret = await self._ext_gogo(url)
@@ -397,7 +398,7 @@ class player:
         if session is None:
             session = await ClientSession().__aenter__()
             flag = True
-        api_url = "https://www2.kickassanime.rs/api/anime_search"
+        api_url = (DOMAIN_REGEX.sub(WEBSITE_DOMAIN, "https://www2.kickassanime.rs/api/anime_search"))
         data = {"keyword": query}
         async with session.post(api_url, data=data) as resp:
             # print(await resp.text())

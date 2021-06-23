@@ -2,7 +2,7 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from kickassanime_scraper import kickass, player, debug
+from kickassanime_scraper import kickass, player, debug, DOMAIN_REGEX, WEBSITE_DOMAIN
 from aiohttp import ClientSession, TCPConnector
 import asyncio
 import subprocess
@@ -151,7 +151,7 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
             if not dict_info:
                 print('Check for typos in the query. Exiting...')
                 return None
-            link = "https://www2.kickassanime.rs" + dict_info["slug"]
+            link = (DOMAIN_REGEX.sub(WEBSITE_DOMAIN, "https://www2.kickassanime.rs")) + dict_info["slug"]
         elif (query is None) and link:
             pass
         else:
@@ -168,8 +168,8 @@ if __name__ == "__main__":
     episode = 1
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'princess'
-    opt = None
+    query = 'kino'
+    opt = 1
     flag = False
     server = '' or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(
