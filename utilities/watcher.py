@@ -165,11 +165,11 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 
 if __name__ == "__main__":
-    episode = 1
+    episode = None
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'kino'
-    opt = 1
+    query = 'maiorita'
+    opt = 0
     flag = False
     server = '' or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(

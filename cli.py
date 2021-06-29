@@ -19,12 +19,7 @@ except ImportError:
 
 base_url = "https://www2.kickassanime.lol"
 
-if len(argv) > 1:
-    if platform.startswith("win"):
-        system(f'python play.py {" ".join(argv[1:])}')
-    else:
-        system(f'python3 play.py {" ".join(argv[1:])}')
-    exit()
+
 
 async def search_and_download():
     query = input("Enter anime name: ")
@@ -74,6 +69,18 @@ choices = {
     "Autoupdate Library": auto_update,
     "See Config": config,
 }
+
+if len(argv) > 1:
+    if argv[1] != 'update':
+        if platform.startswith("win"):
+            system(f'python play.py {" ".join(argv[1:])}')
+        else:
+            system(f'python3 play.py {" ".join(argv[1:])}')
+        exit()
+    else:
+        asyncio.get_event_loop().run_until_complete(choices["Autoupdate Library"]())
+        exit()
+
 menu.add_choices(list(choices.keys()))
 result = menu.select("What would you like?")
 print(result)
