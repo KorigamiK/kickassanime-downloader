@@ -11,6 +11,21 @@ import asyncio
 from tabulate import tabulate
 
 
+class COLOUR():
+    _end = '\033[0m'
+    def _background(code):
+        return "\33[{code}m".format(code=code)
+  
+    def _style_text(code):
+        return "\33[{code}m".format(code=code)
+  
+    def _color_text(code):
+        return "\33[{code}m".format(code=code)
+        
+    @staticmethod
+    def error(text: str):
+        return COLOUR._color_text(31) + text + COLOUR._end
+
 class scraper:
     def __init__(self, url, session=None, get_method=None):
         self.orig_url = url
@@ -210,6 +225,9 @@ class scraper:
         res = base64.b64decode(re.search(r'decode\("(.+)"\)', str(script)).group(1))
         html = bs(res, 'html.parser')
         link_and_quality = [(i['href'], i.text) for i in html.find_all('a')]
+        if not link_and_quality:
+            print(COLOUR.error('No download links available for this episode. Try changing the priority of this server down in config.json and try again.'))
+            return None
         flag = True
         for index, data in enumerate(link_and_quality):
             try:

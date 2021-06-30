@@ -71,16 +71,20 @@ choices = {
 }
 
 if len(argv) > 1:
-    if argv[1] != 'update':
+    if argv[1] == 'update':
+        asyncio.get_event_loop().run_until_complete(choices["Autoupdate Library"]())
+        
+    elif argv[1] == 'download':
+        asyncio.get_event_loop().run_until_complete(choices["Search And Download"]())
+        
+    else:
         if platform.startswith("win"):
             system(f'python play.py {" ".join(argv[1:])}')
         else:
             system(f'python3 play.py {" ".join(argv[1:])}')
-        exit()
-    else:
-        asyncio.get_event_loop().run_until_complete(choices["Autoupdate Library"]())
-        exit()
 
+    exit()
+        
 menu.add_choices(list(choices.keys()))
 result = menu.select("What would you like?")
 print(result)

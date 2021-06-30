@@ -566,9 +566,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.rs/anime/shingeki-no-kyojin-the-final-season-615098"
+    link = "https://www2.kickassanime.ro/anime/pretty-boy-detective-club-727447"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, None, 1, only_player=False, get_ext_servers=True)
+        automate_scraping(link, 8, 9, only_player=False, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:
