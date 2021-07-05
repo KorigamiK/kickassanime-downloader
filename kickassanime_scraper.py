@@ -70,6 +70,7 @@ class kickass:
                 data = await kickass._get_data(i)
                 # print(data.keys())
                 results = data["anime"]["episodes"]
+                break
         try:
             self.last_episode = int(results[0]["slug"].split("/")[-1].split("-")[1])
         except ValueError:  # for ovas and stuff
@@ -348,8 +349,11 @@ class player:
             links_list = await get_list(soup)
             # for i in links_list:
             #     res += "\t\t{i['label']}: {i['file']}\n"
-            res = {i["label"]: i['file'].replace(' ', '%20').replace('\\', '') for i in links_list}
-            return [server_name, res]
+            res = {i["label"]: i['file'].replace(' ', '%20').replace('\\', '') for i in links_list if i["file"]}
+            if res:
+                return [server_name, res]
+            else: 
+                return [server_name, None]
 
         elif server_name == "BETA-SERVER":
             script_tag = (

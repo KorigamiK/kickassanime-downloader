@@ -23,6 +23,9 @@ class COLOUR():
         return "\33[{code}m".format(code=code)
         
     @staticmethod
+    def blue(text: str):
+        return COLOUR._color_text(94) + (text or 'None') + COLOUR._end
+    @staticmethod
     def error(text: str):
         return COLOUR._color_text(31) + text + COLOUR._end
 

@@ -3,6 +3,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from kickassanime_scraper import kickass, player, debug, DOMAIN_REGEX, WEBSITE_DOMAIN
+from utilities.pace_scraper import COLOUR
 from aiohttp import ClientSession, TCPConnector
 import asyncio
 import subprocess
@@ -106,8 +107,8 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
         print(final["name"])
         # print([i["name"] for i in embed_links])
         link = await player_scraper.get_from_server(final["name"], final["src"])
-        if priority[final["name"]]:
-            return link[1][priority[final["name"]]]  # link is like [server_name, link]
+        if priority[final["name"]] and link[1]:
+            return link[1][priority[final["name"]]]  # link is like [server_name, link] link can be str | dict | None
         else:
             return link[1]
     else:
@@ -116,7 +117,7 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
 
 def play(link, encode):
     if debug:
-        print(link)
+        print(COLOUR.blue(link))
     if encode and 'm3u8' in link:
         print('Run this to download the stream ->')
         print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]} -c:v libx265 -c:a copy -preset fast -x265-params crf=26 out.ts')
@@ -140,6 +141,7 @@ def play(link, encode):
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
             # process.wait()
     except:
+        print(COLOUR.error('This server did not work. Try to decrease the priority of this server or try with --ext flag.'))
         exit()
 
 
@@ -165,11 +167,11 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 
 if __name__ == "__main__":
-    episode = None
+    episode = 3
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'maiorita'
-    opt = 0
+    query = 'odd'
+    opt = -1
     flag = False
     server = '' or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(
