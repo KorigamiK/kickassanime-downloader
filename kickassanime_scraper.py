@@ -414,7 +414,7 @@ class player:
                 return resp_data[option]
             else:
                 for j, i in enumerate(resp_data):
-                    print(COLOUR.blue(j, i["name"]))
+                    print(COLOUR.blue(f"{j} {i['name']}"))
                 option = int(input("Enter anime number: "))
                 return resp_data[option]
         else:
