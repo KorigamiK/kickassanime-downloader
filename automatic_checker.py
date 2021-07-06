@@ -1,5 +1,6 @@
 import asyncio
 import json
+from utilities.pace_scraper import COLOUR
 from kickassanime_scraper import automate_scraping
 import re
 import traceback
@@ -34,7 +35,8 @@ async def main():
             new = int(re.search(r"ep_(\d+)", i).group(1)) + 1
             needed[list(needed.keys())[index]] = new
         else:
-            print(f"\nlatest for {j}")
+            print()
+            print(COLOUR.grey(f"Latest for {j}"))
             continue
 
     with open("./Config/to_update.json", "w") as f:

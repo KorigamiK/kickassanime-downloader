@@ -27,7 +27,23 @@ class COLOUR():
         return COLOUR._color_text(94) + (text or 'None') + COLOUR._end
     @staticmethod
     def error(text: str):
-        return COLOUR._color_text(31) + text + COLOUR._end
+        return COLOUR._color_text(41) + text + COLOUR._end
+
+    @staticmethod
+    def grey(text):
+        return COLOUR._color_text(2) + text + COLOUR._end
+
+    @staticmethod
+    def purple_back(text):
+        return COLOUR._color_text(45) + COLOUR._color_text(1) + text + COLOUR._end
+
+    @staticmethod
+    def warn(text):
+        return COLOUR._color_text(103) + COLOUR._color_text(34) + text + COLOUR._end
+
+    @staticmethod
+    def info(text: str):
+        return COLOUR._color_text(95) + (text or 'None') + COLOUR._end
 
 class scraper:
     def __init__(self, url, session=None, get_method=None):
@@ -416,15 +432,13 @@ class downloader:
                 await var.get_final_links(needed_server)
             except Exception as e:
                 try:
-                    print(
-                        f"server/ quality not found, trying any available quality, with error {e}"
-                    )
+                    print(COLOUR.warn(f"Server/ quality not found, trying any available quality, with error {e}"))
                     print()
                     var.quality = -1
                     await var.get_final_links(needed_server)
                     continue
                 except:
-                    print("found bad server. trying another one...")
+                    print(COLOUR.warn("Found bad server. trying another one..."))
                     var.quality = -1
                     serverlinks.remove(needed_server)
                     await var.get_final_links(serverlinks[-1])
@@ -455,7 +469,7 @@ class searcher:
     def print_search(self):  # also returns url
         links = []
         for j, i in enumerate(search_and_get._call_api()):
-            print(j, i["name"])
+            print(COLOUR.blue(j, i["name"]))
             links.append(i["slug"])
         inp = int(input("Enter anime number: "))
         self.url = f"https://www3.animepace.si/anime/{links[inp]}/"
