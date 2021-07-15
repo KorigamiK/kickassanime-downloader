@@ -1,8 +1,8 @@
 {
     "priority": {
-        "BETAPLAYER": "720p",
-        "BETA-SERVER": "360p",
         "BETASERVER3": "360p",
+        "BETA-SERVER": "360p",
+        "BETAPLAYER": "720p",
         "SAPPHIRE-DUCK": null,
         "PINK-BIRD": null,
         "DR.HOFFMANN": null,

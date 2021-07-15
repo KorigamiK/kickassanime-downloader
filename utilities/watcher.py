@@ -132,10 +132,15 @@ def play(link, encode):
     try:
         assert link is not None
         if operating_system == 'nt':
-            query = f'vlc --play-and-exit -f --http-referrer="https://betaplayer.life/" --one-instance --no-playlist-enqueue "{link}"'
+            query = f'vlc --play-and-exit -f --one-instance --no-playlist-enqueue "{link}"'
+            if 'streamani' not in link:
+                query += ' --http-referrer="https://betaplayer.life/"'
             subprocess.run(query, shell=True)
         else:
-            cmd = ["mpv", f'"{link}"', "--http-header-fields='Referer: https://betaplayer.life/'"] + mpv_args # I know hardcoding is bad
+            cmd = ["mpv", f'{link}'] # I know hardcoding is bad
+            if 'streamani' not in link:
+                cmd.append("--http-header-fields='Referer: https://betaplayer.life/'")
+            cmd += mpv_args
             subprocess.run(' '.join(cmd), shell=True)
             # print(' '.join(cmd))
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -167,13 +172,13 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 
 if __name__ == "__main__":
-    episode = 3
+    episode = None
     # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
     link = None
-    query = 'odd'
-    opt = -1
+    query = 'shingeki'
+    opt = -2
     flag = False
-    server = '' or 'PINK-BIRD'
+    server = '' # or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(
         watch(episode, link=link, query=query, option_number=opt, ext_only=flag, custom_server=server, encode=False)
     )

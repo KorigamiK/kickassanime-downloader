@@ -3,14 +3,15 @@ from bs4 import BeautifulSoup as bs
 from ssl import SSLCertVerificationError
 import os
 from contextlib import redirect_stderr
+from aiohttp import ClientSession
 # import cloudscraper
 
 # scraper = cloudscraper.create_scraper(allow_brotli=False)
-async def fetch(url, client) -> bs:
+async def fetch(url, client: ClientSession, headers={}) -> bs:
     try:
         f = open(os.devnull, "w")
         with redirect_stderr(f):  # ignore any error output inside context
-            async with client.get(url) as resp:
+            async with client.get(url, headers=headers) as resp:
                 # print(resp.status)
                 html = await resp.read()
                 return bs(html, "html.parser")

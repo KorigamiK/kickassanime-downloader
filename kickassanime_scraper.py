@@ -7,7 +7,7 @@ from aiohttp import ClientSession, TCPConnector
 from utilities.async_subprocess import async_subprocess, gather_limitter
 import os
 from aiodownloader import downloader, utils
-from typing import Collection, List, Dict
+from typing import List, Dict
 from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 
@@ -101,7 +101,8 @@ class kickass:
         except ValueError:  # for ovas and stuff
             episode_num = 0.0
 
-        print(COLOUR.grey(f"Getting episode {format_float(episode_num)}"))
+        if debug: print(COLOUR.grey(f"Getting episode {format_float(episode_num)}"))
+
         soup = await fetch(self.episode_link, self.session)
         data: Dict[str, str] = None
         for i in soup.find_all("script"):
@@ -207,7 +208,7 @@ class kickass:
                 available.append(i)
         # print(available)
         if len(available) == 0:
-            print(COLOUR.warn(f"No available server in config.json for episode {format_float(episode_number)}"))
+            print(COLOUR.warn(f"No available server in config.json for {self.name} episode {format_float(episode_number)}"))
             print(COLOUR.warn(f"Try adding {tmp_serv} to the config file"))
             return (None, file_name, None)
 
@@ -233,12 +234,12 @@ class kickass:
         if len(a.final_dow_urls) != 0:
             return (a.final_dow_urls[0].replace(" ", "%20"), file_name, headers)
         else:
-            print(COLOUR.error(f"Cannot download {format_float(episode_number)}"))
+            print(COLOUR.error(f"Cannot download {self.name} episode {format_float(episode_number)}"))
             return (None, file_name, headers)
 
     async def get_from_player(self, player_links: list, episode_number: float) -> str:
         a = player(self.session)
-        print(COLOUR.info(f"Writing episode {format_float(episode_number)}\n"))
+        print(COLOUR.info(f"Writing {self.name} episode {format_float(episode_number)}\n"))
         flag = False
         if len(player_links) > 1:
             print(COLOUR.info(f"Number of player links is {len(player_links)}"))
@@ -312,7 +313,7 @@ class player:
             return [server_name, server_link]
 
         iframe_url = server_link.replace("player.php?", "pref.php?")
-        soup = await fetch(iframe_url, self.session)
+        soup = await fetch(iframe_url, self.session, {'referer': 'https://kaa-play.me/'})
 
         def get_script():
             for i in soup.find_all("script"):
@@ -449,9 +450,9 @@ async def automate_scraping(
 
         download_tasks = []
         player_tasks = []
-        for i in embed_result:
 
-            print(COLOUR.grey(f"Starting episode {format_float(i['ep_num'])}"))
+        for i in embed_result:
+            if debug and not automatic_downloads: print(COLOUR.grey(f"Starting episode {format_float(i['ep_num'])}"))
             if i["episode_countdown"] == True:
                 print(COLOUR.info(f'episode {format_float(i["ep_num"])} is still in countdown'))
                 continue
@@ -483,6 +484,11 @@ async def automate_scraping(
                     if headers:
                         f.write(f"headers: {headers}\n")
 
+        if len(player_tasks) != 0:
+            to_play = await asyncio.gather(*player_tasks)
+        else:
+            to_play = [None]
+
         ans = "n"
         if automatic_downloads:
             ans = "y"
@@ -492,7 +498,7 @@ async def automate_scraping(
 
 
         async def use_aiodownloader():
-            if len(links_and_names_and_headers) != 0:
+            if len(links_and_names_and_headers) != 0 and [i[0] for i in links_and_names_and_headers] != [None]:
                 print(COLOUR.purple_back(f"Starting all downloads for {var.name}"))
                 print(COLOUR.purple_back('Please Wait.....'))
                 jobs = [dow_maker(*i) for i in links_and_names_and_headers if None not in i[:-1]]# as last is the headers which can be None
@@ -516,7 +522,7 @@ async def automate_scraping(
             else:
                 # to avoid too much stdout
                 if automatic_downloads == False:
-                    print(COLOUR.info("Nothing to download"))
+                    print(COLOUR.info("No downloads found"))
         
         async def use_subprocess(l_n_h: tuple):
             def get_process(link, name, header) -> async_subprocess:
@@ -550,11 +556,6 @@ async def automate_scraping(
         else:
             if not only_player:
                 write_links(links_and_names_and_headers)
-
-        if len(player_tasks) != 0:
-            to_play = await asyncio.gather(*player_tasks)
-        else:
-            to_play = [None]
 
         for i in to_play:
             if not only_player and i:
