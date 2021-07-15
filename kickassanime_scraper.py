@@ -1,6 +1,7 @@
 import re
 import json
 import asyncio
+from typing_extensions import final
 from utilities.async_web import fetch
 from utilities.pace_scraper import scraper, COLOUR
 from aiohttp import ClientSession, TCPConnector
@@ -261,7 +262,7 @@ class kickass:
 
 
 class player:
-    def __init__(self, session):
+    def __init__(self, session: ClientSession):
         self.session = session
 
     @staticmethod
@@ -308,7 +309,10 @@ class player:
         return await asyncio.gather(*res)
 
     async def get_from_server(self, server_name, server_link):
-        """ returns list: [[server_name, link], ...]"""
+        """ 
+            returns list: [[server_name, link], ...]
+            link: str | {quality: link}
+        """
         if (server_name == "Vidstreaming"):  # from get_player_embed_links due to older anime. All the work has already been done
             return [server_name, server_link]
 
@@ -333,6 +337,7 @@ class player:
             except TypeError:
                 print(COLOUR.error(f'Bad player link for {server_name}'))
                 return [server_name, None]
+        
         elif server_name == "SAPPHIRE-DUCK":
             script_tag: bytes = get_script()
             if not script_tag:
@@ -345,6 +350,7 @@ class player:
                 server_name,
                 re.search(r'(http.*)"', java_script).group(1).replace(r"\/", r"/"),
             ]
+        
         elif server_name == "BETASERVER3" or server_name == "BETAPLAYER":
             res = ""
             links_list = await get_list(soup)
@@ -371,6 +377,34 @@ class player:
             script_tag = str(get_script())
             res = re.search(r'"(http.+)",label', script_tag).group(1)
             return [server_name, res]
+
+        elif server_name == "MAGENTA13":
+            atob_regex = re.compile(r'(?<=atob\(").+(?=")')
+            data_regex = re.compile(r'(?<=setup\().+(?=,)')
+            validate_regex = re.compile('(?<!\\\\)\'')
+            quote_keys_regex = r'([\{\s,])(\w+)(:)'
+
+            def decode_atob(body: str):
+                try:
+                    found = atob_regex.search(body).group(0)
+                    decoded = str(b64decode(found + '=' * (-len(body) % 4)))
+                except:
+                    return body
+
+                return decode_atob(decoded)
+
+            async with self.session.get(server_link.replace('player.php', 'pref.php')) as html:
+                body = await html.text()
+                first_data = decode_atob(body) # fixes padding
+                
+            unvalidated_data = data_regex.search(decode_atob(first_data)).group(0) + '}'
+            final_data = unvalidated_data.replace('\\', '')
+            validated = validate_regex.sub('\"', final_data)
+            final_data = json.loads(re.sub(quote_keys_regex, r'\1"\2"\3', validated)) # object is like {sources: [{file: string, type: 'hls'}], image: string}
+            if len(final_data['sources']) > 1: # I haven't found this
+                print(final_data)
+
+            return [server_name, final_data['sources'][0]['file']]
 
         else:
             # print(f"not implemented server {server_name}")
@@ -570,9 +604,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.ro/anime/pretty-boy-detective-club-727447"
+    link = "https://www2.kickassanime.ro/anime/mother-of-the-goddess-dormitory-uncensored-532808/episode-01-229072"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 8, 9, only_player=False, get_ext_servers=True)
+        automate_scraping(link, None, None, only_player=True, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:
