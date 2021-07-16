@@ -70,9 +70,11 @@ The setup is a little tedious at the moment, but I might make a nice installable
 
 3. `kaa download` or `python cli.py download` -> starts menu to download a series
 
-4. Run the alias with commands to stream any anime that you want. `kaa --help` or `python cli.py --help` for list of all the commands.
+4. `kaa latest` or `python cli.py latest` -> Shows the latest updates on the website
 
-5. Here's the output of the above command: 
+5. Run the alias with commands to stream any anime that you want. `kaa --help` or `python cli.py --help` for list of all the commands.
+
+6. Here's the output of the above command: 
 
 ```
 $ kaa -h 

@@ -6,7 +6,7 @@ import asyncio
 try:
     from selectmenu import SelectMenu
 except ImportError:
-    print('\nSelectmenu not installed, using basic menu layout.')
+    if len(argv) <= 1: print('\nSelectmenu not installed, using basic menu layout.')
     class SelectMenu:
         def add_choices(self, choices: list):
             self.choices = choices
@@ -44,29 +44,29 @@ async def search_and_download():
         download_location=download_location,
     )
 
-
 async def play():
     if platform.startswith("win"):
         system("play.bat")
     else:
         system("bash play.sh")
 
-
 async def auto_update():
     await checker()
     input("Enter to exit...")
-
 
 async def config():
     print("Go to your download location -> Config")
     print("To see current configuration settings")
 
+async def latest():
+    await player.fetch_latest()
 
 menu = SelectMenu()
 choices = {
     "Play Episode": play,
     "Search And Download": search_and_download,
     "Autoupdate Library": auto_update,
+    "Latest": latest,
     "See Config": config,
 }
 
@@ -77,6 +77,9 @@ if len(argv) > 1:
     elif argv[1] == 'download':
         asyncio.get_event_loop().run_until_complete(choices["Search And Download"]())
         
+    elif argv[1] == 'latest':
+        asyncio.get_event_loop().run_until_complete(choices["Latest"]())
+
     else:
         if platform.startswith("win"):
             system(f'python play.py {" ".join(argv[1:])}')

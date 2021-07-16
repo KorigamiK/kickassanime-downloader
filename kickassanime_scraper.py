@@ -1,16 +1,16 @@
 import re
 import json
 import asyncio
-from typing_extensions import final
 from utilities.async_web import fetch
 from utilities.pace_scraper import scraper, COLOUR
 from aiohttp import ClientSession, TCPConnector
 from utilities.async_subprocess import async_subprocess, gather_limitter
 import os
 from aiodownloader import downloader, utils
-from typing import List, Dict
+from typing import List, Dict, Union
 from base64 import b64decode
 from bs4 import BeautifulSoup as bs
+from tabulate import tabulate
 
 try:  # trying to apply uvloop
     import uvloop
@@ -262,6 +262,9 @@ class kickass:
 
 
 class player:
+    latest_rss = 'https://raw.githubusercontent.com/ArjixWasTaken/anime-rss/main/kickassanime/kickassanime-rss.xml'
+    max_table_length = 90
+
     def __init__(self, session: ClientSession):
         self.session = session
 
@@ -456,6 +459,26 @@ class player:
             print(COLOUR.error(f"No anime avaiable for {query}"))
             return None
 
+    @staticmethod
+    async def fetch_latest(session: Union[ClientSession, None]=None) -> None:
+        flag = False
+        if session is None:
+            session = await ClientSession().__aenter__()
+            flag = True
+
+        async with session.get(player.latest_rss) as resp:
+            data = bs(await resp.text(), 'html.parser')
+
+        if flag: await session.close()
+
+        table = []
+        headers = ['Title', 'Episode']
+        for i in data.find_all('item'):
+            table.append(map(lambda x: '\n'.join((x[i: i + player.max_table_length].strip() for i in range(0, len(x), player.max_table_length))), 
+            i.find('title').text.replace('English', '').replace('Subbed', '').replace('Dubbed', 'Dub').split('Episode')))
+        
+        print(tabulate(table, headers=headers, tablefmt='psql', showindex=True))
+
 
 async def automate_scraping(
     link,
@@ -604,9 +627,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.ro/anime/mother-of-the-goddess-dormitory-uncensored-532808/episode-01-229072"
+    link = "https://www2.kickassanime.ro/anime/shingeki-no-kyojin-the-final-season-615098"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, None, None, only_player=True, get_ext_servers=True)
+        automate_scraping(link, None, 1, only_player=True, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:
