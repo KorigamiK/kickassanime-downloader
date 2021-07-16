@@ -409,6 +409,20 @@ class player:
 
             return [server_name, final_data['sources'][0]['file']]
 
+        elif server_name == "THETA-ORIGINAL":
+            decode_regex = r'(?<=decode\(").+(?="\))'
+            sources_regex = re.compile(r'(?<=sources: )\[\{.*?\}\]')
+            quote_keys_regex = r'([\{\s,])(\w+)(:)'
+
+            async with self.session.get(server_link) as resp:
+                html = await resp.text()
+
+            decoded = str(b64decode(re.search(decode_regex, html).group(0)))
+            sources = sources_regex.search(decoded).group(0)
+            sources = json.loads(re.sub(quote_keys_regex, r'\1"\2"\3', sources)) # this is of the format [{file: string, label: '1080p', type: 'mp4'}, ...]
+            if len(sources) > 1: print(sources) # Haven't seen this happen
+            return [server_name, sources[0]['file']]
+            
         else:
             # print(f"not implemented server {server_name}")
             return [server_name, iframe_url]
@@ -627,9 +641,9 @@ async def automate_scraping(
 
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.ro/anime/shingeki-no-kyojin-the-final-season-615098"
+    link = "https://www2.kickassanime.ro/anime/rick-and-morty-season-5-uncensored-453863"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, None, 1, only_player=True, get_ext_servers=True)
+        automate_scraping(link, 4, None, only_player=True, get_ext_servers=True)
     ))
     print("\nOMEDETO !!")
 elif False:
