@@ -137,7 +137,7 @@ def play(link, encode):
                 query += ' --http-referrer="https://betaplayer.life/"'
             subprocess.run(query, shell=True)
         else:
-            cmd = ["mpv", f'{link}'] # I know hardcoding is bad
+            cmd = ["mpv", f'"{link}"'] # I know hardcoding is bad
             if 'streamani' not in link:
                 cmd.append("--http-header-fields='Referer: https://betaplayer.life/'")
             cmd += mpv_args
