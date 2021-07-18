@@ -262,7 +262,7 @@ class kickass:
 
 
 class player:
-    latest_rss = 'https://raw.githubusercontent.com/ArjixWasTaken/anime-rss/main/kickassanime/kickassanime-rss.xml'
+    latest_rss = 'https://www2.kickassanime.ro/feed/latest'
     max_table_length = 90
 
     def __init__(self, session: ClientSession):
