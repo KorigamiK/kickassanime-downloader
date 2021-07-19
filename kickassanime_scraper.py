@@ -487,9 +487,13 @@ class player:
 
         table = []
         headers = ['Title', 'Episode']
+
         for i in data.find_all('item'):
+            name, episode = i.find('title').text.replace('English', '').replace('Subbed', '').replace('Dubbed', 'Dub').split('Episode')
+            episode = ' '.join([*filter(lambda x: x, episode.split(' '))])
+
             table.append(map(lambda x: '\n'.join((x[i: i + player.max_table_length].strip() for i in range(0, len(x), player.max_table_length))), 
-            i.find('title').text.replace('English', '').replace('Subbed', '').replace('Dubbed', 'Dub').split('Episode')))
+            [COLOUR.blue(name), COLOUR.info(episode)]))
         
         print(tabulate(table, headers=headers, tablefmt='psql', showindex=True))
 
