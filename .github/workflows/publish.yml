@@ -1,0 +1,42 @@
+name: Automatic version updates
+
+on: push
+
+
+jobs:
+  build:
+    name: Update Version
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Apply Update
+      run: |
+        python ./__version__.py
+
+
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        # Optional but recommended
+        # Defaults to "Apply automatic changes"
+        commit_message: Apply Version Update
+
+        file_pattern: ./__version__.py
+
+        # Optional local file path to the repository
+        # Defaults to the root of the repository
+        repository: .
+
+        # Optional: Skip internal call to `git fetch`
+        skip_fetch: true

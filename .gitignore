@@ -12,4 +12,4 @@ bad.py
 *.pyc
 tempCodeRunnerFile.py
 *.ts
-.github
+# .github
