@@ -1,5 +1,6 @@
 {
     "WEBSITE_DOMAIN": ".ro",
+    "check_updates": false,
     "priority": {
         "KICKASSANIMEV2": 2,
         "KICKASSANIMEX": 2,

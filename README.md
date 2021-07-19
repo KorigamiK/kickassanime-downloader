@@ -66,6 +66,17 @@ The setup is a little tedious at the moment, but I might make a nice installable
 
 1. Run the alias with no commands/arguments or just `python cli.py` to get the menu of all the actions you have.
 
+```
+$ kaa
+What would you like? (Use arrow keys)
+ > Play Episode            
+   Search And Download     
+   Autoupdate Library      
+   Fetch Latest            
+   Check For Updates       
+   See Config
+```
+
 2. `kaa update` or `python cli.py update` -> auto updates library
 
 3. `kaa download` or `python cli.py download` -> starts menu to download a series

@@ -11,6 +11,7 @@ from typing import List, Dict, Union
 from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 from tabulate import tabulate
+from __version__ import version as CURRENT_VERSION
 
 try:  # trying to apply uvloop
     import uvloop
@@ -26,11 +27,13 @@ with open("./Config/config.json") as file:
     download_using = data["downloader"]
     max_subprocesses = data["max_subprocesses"]
     WEBSITE_DOMAIN = data["WEBSITE_DOMAIN"]
+    check_updates: bool = data["check_updates"]
 
 def format_float(num) -> str:
     return f"{num:04.1f}".rstrip("0").rstrip(".")
 
 DOMAIN_REGEX = re.compile(r'\.(lol|rs|ro)', re.IGNORECASE)
+GITHUB_REPOSITORY = 'https://github.com/KorigamiK/kickassanime-downloader'
 
 class kickass:
     def __init__(
@@ -497,6 +500,27 @@ class player:
         
         print(tabulate(table, headers=headers, tablefmt='psql', showindex=True))
 
+async def check_latest_version(session: Union[ClientSession, None]=None):
+    flag = False
+    if session is None:
+        session = await ClientSession().__aenter__()
+        flag = True
+
+    VERSION_URL = 'https://raw.githubusercontent.com/KorigamiK/kickassanime-downloader/master/__version__.py'
+    LATEST_VERSION_REGEX = re.compile(r'(?<=version = ).+')
+
+    async with session.get(VERSION_URL) as resp:
+        LATEST_VERSION: float = float(LATEST_VERSION_REGEX.search(await resp.text()).group(0))
+    if flag: await session.close()
+
+    if CURRENT_VERSION != LATEST_VERSION:
+        print(COLOUR.info(f'New version {LATEST_VERSION} now available over current {CURRENT_VERSION} !'))
+        print(COLOUR.info(f'Update your files now from {GITHUB_REPOSITORY}'))
+        print()
+    elif flag:
+        print(COLOUR.info(f'You are on the latest Version {CURRENT_VERSION} !'))
+    else:
+        pass
 
 async def automate_scraping(
     link,
@@ -506,10 +530,12 @@ async def automate_scraping(
     download_location=os.getcwd(),
     only_player=False,
     get_ext_servers=False,
+    check_version=False,
 ):
     async with ClientSession(
         connector=TCPConnector(ssl=False), headers={"Connection": "keep-alive"}
     ) as sess:
+        
         var = kickass(sess, link)
         print(COLOUR.info(var.name))
         tasks = []
@@ -584,11 +610,12 @@ async def automate_scraping(
                         if (not automatic_downloads):
                             await utils.multi_progress_bar(jobs)
                         await asyncio.gather(*tasks_3, return_exceptions=False)
+
                     except Exception as e:
                         print(COLOUR.error(repr(e)))
                         if debug:
                             print(COLOUR.grey(links_and_names_and_headers))
-                        return (var.name, None)
+                        return (var.name, None) # this will fail the entire run even if some got downloaded.
                 else:
                     # to avoid too much stdout
                     if automatic_downloads == False:
@@ -620,6 +647,10 @@ async def automate_scraping(
 
             await gather_limitter(*tasks, max=max_subprocesses)
 
+        if (check_version or check_updates):
+            if not automatic_downloads: # don't check if automatic downloads
+                await check_latest_version(sess)
+
         if ans == "y" and not only_player:
             if download_using == 'aiodownloader':
                 x = await use_aiodownloader()
@@ -635,19 +666,18 @@ async def automate_scraping(
         for i in to_play:
             if not only_player and i:
                 print(i)
-
-        if (len(links_and_names_and_headers) == 0 or \
-            None in links_and_names_and_headers[0]):
+                
+        try:
+            last_downloaded = [i[1] for i in links_and_names_and_headers if i[0]][0]
+            return (var.name, last_downloaded)
+        except IndexError:
             # None when no server in config is available or there was no download link available for that episode
             return (var.name, None)
-        else:
-            return (var.name, links_and_names_and_headers[0][1])
-
 
 if __name__ == "__main__":
-    link = "https://www2.kickassanime.ro/anime/rick-and-morty-season-5-uncensored-453863"
+    link = "https://www2.kickassanime.rs/anime/edens-zero-279736"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 4, None, only_player=True, get_ext_servers=True)
+        automate_scraping(link, 16, None, only_player=False, get_ext_servers=True, check_version=True),
     ))
     print("\nOMEDETO !!")
 elif False:

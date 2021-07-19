@@ -21,6 +21,7 @@ async def main():
                 end_episode=None,
                 automatic_downloads=True,
                 download_location=download_location,
+                check_version=False,
             )
         )
     try:

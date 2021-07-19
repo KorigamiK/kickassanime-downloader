@@ -1,4 +1,4 @@
-from kickassanime_scraper import automate_scraping, player
+from kickassanime_scraper import automate_scraping, player, check_latest_version
 from automatic_checker import download_location, main as checker
 from sys import platform, argv
 from os import system
@@ -66,7 +66,8 @@ choices = {
     "Play Episode": play,
     "Search And Download": search_and_download,
     "Autoupdate Library": auto_update,
-    "Latest": latest,
+    "Fetch Latest": latest,
+    "Check For Updates": check_latest_version,
     "See Config": config,
 }
 
@@ -78,8 +79,8 @@ if len(argv) > 1:
         asyncio.get_event_loop().run_until_complete(choices["Search And Download"]())
         
     elif argv[1] == 'latest':
-        asyncio.get_event_loop().run_until_complete(choices["Latest"]())
-
+        asyncio.get_event_loop().run_until_complete(choices["Fetch Latest"]())
+        
     else:
         if platform.startswith("win"):
             system(f'python play.py {" ".join(argv[1:])}')

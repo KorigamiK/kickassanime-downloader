@@ -1,7 +1,9 @@
 name: Automatic version updates
 
-on: push
-
+on: 
+  push:
+    paths-ignore:
+      - '**.md'
 
 jobs:
   build:
