@@ -14,6 +14,9 @@ A nice and fast asynchronous anime downloader, streamer and more for kickassanim
 
 
 ## Update :
+
+-  Check for updates by running  the alias  or cli.py  and  select "Fetch Latest"  to check if a  newer version is available.
+
 1. If you used `git` to clone the repository then running `git pull` will do the trick.
 
 2. If you downloaded the repository as a zip file then you need to download the repository again and replace all the files except the `Config` folder
