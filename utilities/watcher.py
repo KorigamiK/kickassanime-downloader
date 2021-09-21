@@ -1,3 +1,4 @@
+import os
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
@@ -139,9 +140,13 @@ def play(link, encode):
         else:
             cmd = ["mpv", f'"{link}"'] # I know hardcoding is bad
             if 'streamani' not in link:
-                cmd.append("--http-header-fields='Referer: https://betaplayer.life/'")
+                cmd.append('--http-header-fields="Referer: https://betaplayer.life/"')
             cmd += mpv_args
+
+            if os.system == 'nt':
+                cmd = [r'C:\Windows\System32\cmd.exe'] + cmd
             subprocess.run(' '.join(cmd), shell=True)
+
             # print(' '.join(cmd))
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
             # process.wait()

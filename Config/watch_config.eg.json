@@ -16,8 +16,8 @@
         "Vidcdn"
     ],
     "mpv_args": [
-        "--vid=3",
-        "--aid=5"
+        "--vid=1",
+        "--aid=1"
     ],
     "unused_ext": [
         "Mp4Upload",
