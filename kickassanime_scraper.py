@@ -12,6 +12,8 @@ from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 from tabulate import tabulate
 from __version__ import version as CURRENT_VERSION
+from urllib.parse import urlparse, parse_qs
+
 
 try:  # trying to apply uvloop
     import uvloop #type: ignore
@@ -434,9 +436,25 @@ class player:
         tag = str(page.find("div"))
         return re.search(r"'(http.+)',label", tag).group(1)  # the first (0) result can be .m3u8 or .mp4 but the second (1) is always .m3u8. Can be experimented on later
 
+    async def _vidstreaming(self, url):
+        page = await fetch(url, self.session)
+        # available servers are ['Multiquality Server', 'StreamSB', 'Doodstream', 'Server Hyrax', 'Mp4upload', 'YourUpload']
+        servers = {i.text: i.get('data-video') for i in page.find_all('li', {'class': 'linkserver'}) if i.get('data-video')}
+        # download link can also be found.
+        try:
+            page = await fetch(servers['Multiquality Server'], self.session)
+            tag = str(page.find('div', {'class':'videocontent'}))
+            return re.search(r"(?<=file:\s')h.+?(?=',)", tag).group(0) #hls streaming url
+        
+        except KeyError:
+            print(servers)
+            print(COLOUR.error("Didn't work try ext flag"))
+
     async def get_ext_server(self, ext_link, server_name):
-        soup = await fetch(ext_link, self.session)
-        url = "http:" + re.search(r"(\/.+)'",[str(i) for i in soup.select('script') if 'https://gogo-play.net/' in str(i) or 'streamani.net' in str(i)][0]).group(1)
+        '''Parses the kaa-play.me player urls'''
+        params = parse_qs(urlparse(ext_link).query)
+        url = params['data'][0]
+
         ret = None
         if server_name == "Vidcdn" or server_name == "Gogo server":
             ret = await self._ext_gogo(url)
@@ -446,7 +464,8 @@ class player:
             # url = 'http:' + page.find('div', id="list-server-more").ul.find_all('li')[1]['data-video'] # more servers can be accounted for.
             url = url.replace("streaming.php?", "loadserver.php?")
             url = url.replace("embed.php", "loadserver.php")  # sometimes
-            ret = await self._ext_gogo(url)
+            ret = await self._vidstreaming(url)
+
         return ret
 
     @staticmethod

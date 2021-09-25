@@ -46,13 +46,13 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
 
     player_scraper = player(session)
     if len(player_links) > 1:  # just some experimental stuff
-        print(f"number of player links is {len(player_links)}")
+        print(f"number of player links is {len(player_links)}", player_links)
 
     embed_links = None
 
     async def try_ext(index=0):
         if index == 0 :print("Trying ext_servers")
-        else: print('Trying next.')
+        else: print(f'Trying next {ext_priority[index]}')
         if len(ext_priority)-1 == index: 
             print("Cannot play using ext_servers. Try disabling the flag")
             print(data)
@@ -67,7 +67,7 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
                 ext_links[ext_priority[index]], ext_priority[index]
             )
             return link
-        except:
+        except AssertionError:
             return await try_ext(index=index+1)
 
     if not ext_only:
@@ -117,21 +117,22 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
 
 
 def play(link, encode):
-    if debug:
-        print(COLOUR.blue(link))
-    if encode and 'm3u8' in link:
-        print('Run this to download the stream ->')
-        print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]} -c:v libx265 -c:a copy -preset fast -x265-params crf=26 out.ts')
-        print('Run this to encode the stream ->')
-        print(f'ffmpeg -i out.ts -c:v copy -c:a copy final.mp4')
-        print('Change them however you like')
-        return None
-
-    elif encode:
-        print('Cannot encode non m3u8 episodes. Try disabling the flag')
-        return None
     try:
         assert link is not None
+        if debug:
+            print(COLOUR.blue(link))
+        if encode and 'm3u8' in link:
+            print('Run this to download the stream ->')
+            print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]} -c:v libx265 -c:a copy -preset fast -x265-params crf=26 out.ts')
+            print('Run this to encode the stream ->')
+            print(f'ffmpeg -i out.ts -c:v copy -c:a copy final.mp4')
+            print('Change them however you like')
+            return None
+
+        elif encode:
+            print('Cannot encode non m3u8 episodes. Try disabling the flag')
+            return None
+        
         if operating_system == 'nt':
             query = f'vlc --play-and-exit -f --one-instance --no-playlist-enqueue "{link}"'
             if 'streamani' not in link:
@@ -150,7 +151,7 @@ def play(link, encode):
             # print(' '.join(cmd))
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
             # process.wait()
-    except:
+    except AssertionError:
         print(COLOUR.error('This server did not work. Try to decrease the priority of this server or try with --ext flag.'))
         exit()
 
@@ -177,10 +178,10 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 
 if __name__ == "__main__":
-    episode = None
-    # link = "https://www2.kickassanime.rs/anime/summer-wars-dub-100201" and None
-    link = None
-    query = 'shingeki'
+    episode = 3
+    link = "https://www2.kickassanime.ro/anime/kobayashi-san-chi-no-maid-dragon-dub-611579"# and None
+    # query = 'maid dragon'
+    query = None
     opt = -2
     flag = False
     server = '' # or 'PINK-BIRD'
