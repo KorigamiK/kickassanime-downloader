@@ -539,6 +539,7 @@ async def check_latest_version(session: Union[ClientSession, None]=None):
             if input('\nWould you like to pull the latest changes using git? (y/n): ') == 'y':
                 print(COLOUR.info('Running git pull...'))
                 os.system('git pull')
+                print(COLOUR.info('Please make sure to check the .eg.json files for new additions or changes, in case any breaking changes have been added.'))
         print()
     elif flag:
         print(COLOUR.info(f'You are on the latest Version {CURRENT_VERSION} !'))
