@@ -534,6 +534,11 @@ async def check_latest_version(session: Union[ClientSession, None]=None):
     if CURRENT_VERSION != LATEST_VERSION:
         print(COLOUR.info(f'New version {LATEST_VERSION} now available over current {CURRENT_VERSION} !'))
         print(COLOUR.info(f'Update your files now from {GITHUB_REPOSITORY}'))
+
+        if os.path.isdir('./.git'):
+            if input('\nWould you like to pull the latest changes using git? (y/n): ') == 'y':
+                print(COLOUR.info('Running git pull...'))
+                os.system('git pull')
         print()
     elif flag:
         print(COLOUR.info(f'You are on the latest Version {CURRENT_VERSION} !'))
