@@ -110,10 +110,11 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
         print(final["name"])
         # print([i["name"] for i in embed_links])
         link = await player_scraper.get_from_server(final["name"], final["src"])
-        if priority[final["name"]] and link[1]:
-            return link[1][priority[final["name"]]]  # link is like [server_name, link] link can be str | dict | None
+        header = link[2]
+        if priority[final["name"]] and link[1]: # checks if any options are mentioned in the watch_config
+            return link[1][priority[final["name"]]], header  # link is like [server_name, link] link can be str | dict | None
         else:
-            return link[1]
+            return link[1], header
     else:
         return await try_ext()
 
@@ -194,7 +195,7 @@ if __name__ == "__main__":
     # query = 'maid dragon'
     query = None
     opt = -2
-    flag = True
+    flag = False
     server = '' # or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(
         watch(episode, link=link, query=query, option_number=opt, ext_only=flag, custom_server=server, encode=False)

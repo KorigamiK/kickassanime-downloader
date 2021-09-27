@@ -317,11 +317,15 @@ class player:
 
     async def get_from_server(self, server_name, server_link):
         """ 
-            returns list: [[server_name, link], ...]
+            returns [server_name, link, header] where
             link: str | {quality: link}
+            header: None | {Referer: url}
         """
+
+        header = None
         if (server_name == "Vidstreaming"):  # from get_player_embed_links due to older anime. All the work has already been done
-            return [server_name, server_link]
+            header = {'Referer': 'https://goload.one'}
+            return [server_name, server_link, header]
 
         iframe_url = server_link.replace("player.php?", "pref.php?")
         soup = await fetch(iframe_url, self.session, {'referer': 'https://kaa-play.me/'})
@@ -340,22 +344,23 @@ class player:
         if server_name == "PINK-BIRD":
             script_tag: str = get_script()
             try:
-                return [server_name, bs(script_tag, "html.parser").find("source")["src"]]
+                return [server_name, bs(script_tag, "html.parser").find("source")["src"], header]
             except TypeError:
                 print(COLOUR.error(f'Bad player link for {server_name}'))
-                return [server_name, None]
+                return [server_name, None, header]
         
         elif server_name == "SAPPHIRE-DUCK":
             script_tag: bytes = get_script()
             if not script_tag:
                 print(COLOUR.error(f'Bad player link for {server_name}'))
-                return [server_name, None]
+                return [server_name, None, header]
             sap_duck = bs(script_tag, "html.parser")
             java_script = str(sap_duck.select_one("script"))
 
             return [
                 server_name,
                 re.search(r'(http.*)"', java_script).group(1).replace(r"\/", r"/"),
+                header
             ]
         
         elif server_name == "BETASERVER3" or server_name == "BETAPLAYER":
@@ -365,9 +370,9 @@ class player:
             #     res += "\t\t{i['label']}: {i['file']}\n"
             res = {i["label"]: i['file'].replace(' ', '%20').replace('\\', '') for i in links_list if i["file"]}
             if res:
-                return [server_name, res]
+                return [server_name, res, header]
             else: 
-                return [server_name, None]
+                return [server_name, None, header]
 
         elif server_name == "BETA-SERVER":
             script_tag = (
@@ -377,13 +382,13 @@ class player:
             )
             links_list = json.loads(re.search(r"\[\{.+\}\]", script_tag).group(0))
             res = {i["label"].strip(): i["file"].replace('\\', '') for i in links_list}
-            return [server_name, res]
+            return [server_name, res, header]
 
         elif server_name == "DR.HOFFMANN":
             soup = await fetch(server_link, self.session)
             script_tag = str(get_script())
             res = re.search(r'"(http.+)",label', script_tag).group(1)
-            return [server_name, res]
+            return [server_name, res, header]
 
         elif server_name == "MAGENTA13":
             atob_regex = re.compile(r'(?<=atob\(").+(?=")')
@@ -410,8 +415,8 @@ class player:
             final_data = json.loads(re.sub(quote_keys_regex, r'\1"\2"\3', validated)) # object is like {sources: [{file: string, type: 'hls'}], image: string}
             if len(final_data['sources']) > 1: # I haven't found this
                 print(final_data)
-
-            return [server_name, final_data['sources'][0]['file']]
+            print(final_data) # For test
+            return [server_name, final_data['sources'][0]['file'], header]
 
         elif server_name == "THETA-ORIGINAL":
             decode_regex = r'(?<=decode\(").+(?="\))'
@@ -425,11 +430,11 @@ class player:
             sources = sources_regex.search(decoded).group(0)
             sources = json.loads(re.sub(quote_keys_regex, r'\1"\2"\3', sources)) # this is of the format [{file: string, label: '1080p', type: 'mp4'}, ...]
             if len(sources) > 1: print(sources) # Haven't seen this happen
-            return [server_name, sources[0]['file']]
+            return [server_name, sources[0]['file'], header]
             
         else:
             # print(f"not implemented server {server_name}")
-            return [server_name, iframe_url]
+            return [server_name, iframe_url, header]
 
     async def _ext_gogo(self, url):
         page = await fetch(url, self.session)
