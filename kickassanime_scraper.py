@@ -7,7 +7,7 @@ from aiohttp import ClientSession, TCPConnector
 from utilities.async_subprocess import async_subprocess, gather_limitter
 import os
 from aiodownloader import downloader, utils
-from typing import List, Dict, Union
+from typing import List, Dict, Tuple, Union
 from base64 import b64decode
 from bs4 import BeautifulSoup as bs
 from tabulate import tabulate
@@ -288,7 +288,7 @@ class player:
             return [
                 {
                     "name": "Vidstreaming",
-                    "src": await self.get_ext_server(player_link, "Vidstreaming"),
+                    "src": (await self.get_ext_server(player_link, "Vidstreaming"))[0],
                 }
             ]
 
@@ -450,12 +450,16 @@ class player:
             print(servers)
             print(COLOUR.error("Didn't work try ext flag"))
 
-    async def get_ext_server(self, ext_link, server_name):
+    async def get_ext_server(self, ext_link, server_name)->Tuple[str, Union[None, Dict[str, str]]]:
         '''Parses the kaa-play.me player urls'''
         params = parse_qs(urlparse(ext_link).query)
         url = params['data'][0]
 
+        if not re.match(r'^https?:', url):
+            url = 'https:' + url
+
         ret = None
+        headers = None
         if server_name == "Vidcdn" or server_name == "Gogo server":
             ret = await self._ext_gogo(url)
 
@@ -464,9 +468,10 @@ class player:
             # url = 'http:' + page.find('div', id="list-server-more").ul.find_all('li')[1]['data-video'] # more servers can be accounted for.
             url = url.replace("streaming.php?", "loadserver.php?")
             url = url.replace("embed.php", "loadserver.php")  # sometimes
+            headers = {'Referer': 'https://goload.one'}
             ret = await self._vidstreaming(url)
 
-        return ret
+        return ret, headers
 
     @staticmethod
     async def search(query: str, session: ClientSession=None, option: int = None) -> dict:

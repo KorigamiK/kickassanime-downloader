@@ -1,6 +1,7 @@
 import os
 import sys
 from os import path
+from typing import Coroutine, Dict, Tuple, Union
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from kickassanime_scraper import kickass, player, debug, DOMAIN_REGEX, WEBSITE_DOMAIN
@@ -22,7 +23,9 @@ with open("./Config/watch_config.json") as file:
         
 names = list(priority.keys())
 
-async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_server: str=''):
+async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_server='')-> Union[None, str, Tuple[str, Union[dict, None]]]:
+    '''Returns Either None or tuple with link, header=None, dict'''
+    
     var = kickass(session, anime_link)
     print(var.name)
     # dont touch this as its a generator
@@ -51,7 +54,7 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
     embed_links = None
 
     async def try_ext(index=0):
-        if index == 0 :print("Trying ext_servers")
+        if index == 0: print(f"Trying ext_servers {ext_priority[index]}")
         else: print(f'Trying next {ext_priority[index]}')
         if len(ext_priority)-1 == index: 
             print("Cannot play using ext_servers. Try disabling the flag")
@@ -63,11 +66,10 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
         try:
             assert ext_links[ext_priority[index]]
             print(ext_priority[index])
-            link = await player_scraper.get_ext_server(
-                ext_links[ext_priority[index]], ext_priority[index]
-            )
-            return link
-        except AssertionError:
+            link, header = await player_scraper.get_ext_server(ext_links[ext_priority[index]], ext_priority[index])
+            return link, header
+
+        except KeyError:
             return await try_ext(index=index+1)
 
     if not ext_only:
@@ -116,7 +118,7 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
         return await try_ext()
 
 
-def play(link, encode):
+def play(link, encode, header: Union[None, Dict[str, str]]=None):
     try:
         assert link is not None
         if debug:
@@ -136,12 +138,18 @@ def play(link, encode):
         if operating_system == 'nt':
             query = f'vlc --play-and-exit -f --one-instance --no-playlist-enqueue "{link}"'
             if 'streamani' not in link:
-                query += ' --http-referrer="https://betaplayer.life/"'
+                if header:
+                    query += f' --http-referrer="{header["Referer"]}"'
+                else:
+                    query += ' --http-referrer="https://betaplayer.life/"'
             subprocess.run(query, shell=True)
         else:
             cmd = ["mpv", f'"{link}"'] # I know hardcoding is bad
             if 'streamani' not in link:
-                cmd.append('--http-header-fields="Referer: https://betaplayer.life/"')
+                if header:
+                    cmd.append(f'--http-header-fields="Referer: {header["Referer"]}"')
+                else:
+                    cmd.append('--http-header-fields="Referer: https://betaplayer.life/"')
             cmd += mpv_args
 
             if os.system == 'nt':
@@ -173,17 +181,20 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
         print(link)
         if stop: return None
         player_link = await get_watch_link(link, episode, session, ext_only, custom_server=custom_server)
-        # print(player_link)
-        play(player_link, encode)
+        try:
+            header = player_link[1]
+            play(player_link[0], encode, header)
+        except Exception:
+            play(player_link, encode)
 
 
 if __name__ == "__main__":
-    episode = 3
-    link = "https://www2.kickassanime.ro/anime/kobayashi-san-chi-no-maid-dragon-dub-611579"# and None
+    episode = None
+    link = "https://www2.kickassanime.ro/anime/getsuyoubi-no-tawawa-860746"# and None
     # query = 'maid dragon'
     query = None
     opt = -2
-    flag = False
+    flag = True
     server = '' # or 'PINK-BIRD'
     asyncio.get_event_loop().run_until_complete(
         watch(episode, link=link, query=query, option_number=opt, ext_only=flag, custom_server=server, encode=False)
