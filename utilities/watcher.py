@@ -71,6 +71,7 @@ async def get_watch_link(anime_link, ep_num, session, ext_only=False, custom_ser
 
         except KeyError:
             return await try_ext(index=index+1)
+    
 
     if not ext_only:
         try:

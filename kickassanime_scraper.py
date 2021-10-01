@@ -446,14 +446,46 @@ class player:
         # available servers are ['Multiquality Server', 'StreamSB', 'Doodstream', 'Server Hyrax', 'Mp4upload', 'YourUpload']
         servers = {i.text: i.get('data-video') for i in page.find_all('li', {'class': 'linkserver'}) if i.get('data-video')}
         # download link can also be found.
-        try:
-            page = await fetch(servers['Multiquality Server'], self.session)
+
+        async def multiquality(key):
+            page = await fetch(servers[key], self.session)
             tag = str(page.find('div', {'class':'videocontent'}))
             return re.search(r"(?<=file:\s')h.+?(?=',)", tag).group(0) #hls streaming url
-        
-        except KeyError:
-            print(servers)
+
+        async def streamsb(key):
+            # page = await fetch(servers[key], self.session)
+            url = servers[key]
+            template = 'https://sbplay.org/play/{id}?auto=0&referer=&'
+            player_link = template.format(id=re.search(r'(?<=embed-).+(?=\.html)', url).group(0))
+
+            async with self.session.get(player_link) as resp:
+                page = await resp.text() 
+                link = re.search(r'''({file:\s?"|')(http.+)("|')}''', page).group(2)
+            return link
+
+        parsers = {'StreamSB': streamsb, 'Multiquality Server': multiquality}
+        available = list(parsers.keys())
+
+        async def try_all(index=0):
+            if index == len(available):
+                COLOUR.error('Could not get stream. Try decreasing the priority of this server.')
+                raise LookupError()
+            print(f'Trying {available[index]}')
+            try:
+                return await parsers[available[index]](available[index])
+            except Exception as e:
+                print(e)
+                return await try_all(index+1)
+
+        try:
+            return await try_all()
+        except LookupError:
+            if debug:
+                print(servers)
+                print(url)
             print(COLOUR.error("Didn't work try ext flag"))
+        except:
+            return None
 
     async def get_ext_server(self, ext_link, server_name)->Tuple[str, Union[None, Dict[str, str]]]:
         '''Parses the kaa-play.me player urls'''
