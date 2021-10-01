@@ -1,7 +1,7 @@
 __pycache__
 *.mp4
 *.bak
-.vscode
+# .vscode
 bad
 episodes.txt
 all_links.txt

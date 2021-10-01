@@ -1,0 +1,1 @@
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QAuto update your ongoing series for new episodes autoupdate\\E$"}

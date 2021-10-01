@@ -1,0 +1,5 @@
+{
+    "python.formatting.provider": "black",
+    "python.analysis.extraPaths": ["/home/origami/Documents/kickassanime-downloader/"],
+    "editor.bracketPairColorization.enabled": true
+}
