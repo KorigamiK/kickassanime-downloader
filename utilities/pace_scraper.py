@@ -273,8 +273,8 @@ class scraper:
         try:
             # print("Its the new server kaa-play")
             # server = link.split("https://kaa-play.com")[1].split("/")[1]
-            server = re.search(r'((\.me)|(\.com)|(\.ru))\/(.*?)\/', link).group(5)
-        except:
+            server = re.search(r'((\.me)|(\.com)|(\.ru)|(\.xyz))\/(.*?)\/', link).group(6)
+        except AttributeError:
             print(f"Bad serverlink {link}. It does not follow known pattern, please make an issue on github.")
             return
 

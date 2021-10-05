@@ -12,6 +12,8 @@ from typing import Optional, List
 import aiohttp
 import aiofiles
 
+from utilities.pace_scraper import COLOUR
+
 if __name__ == "__main__":
     import utils
 else:
@@ -82,7 +84,7 @@ class DownloadJob:
         """
         self.progress += chunk_size
 
-    async def download(self):
+    async def download(self, return_exceptions=False):
         """
         Downloads the file from the given url to a file in the given path.
         """
@@ -103,10 +105,15 @@ class DownloadJob:
                 return self
 
             else:
-                raise aiodownloader_error(
-                    message=f"There was a problem processing {self.file_url}",
-                    code=resp.status,
-                )
+                e = aiodownloader_error(
+                        message=f"There was a problem processing {self.file_url}",
+                        code=resp.status,
+                    )
+                if return_exceptions:
+                    print(COLOUR.error(repr(e)))
+                    return e
+                else:
+                    raise e
 
 class aiodownloader_error(Exception):
     def __init__(self, code, message):

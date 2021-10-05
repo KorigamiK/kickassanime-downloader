@@ -667,21 +667,24 @@ async def automate_scraping(
         async def use_aiodownloader():
             if len(links_and_names_and_headers) != 0 and [i[0] for i in links_and_names_and_headers] != [None]:
                 print(COLOUR.purple_back(f"Starting all downloads for {var.name}"))
-                print(COLOUR.purple_back('Please Wait.....'))
+                print(COLOUR.purple_back('Please Wait...'))
                 jobs = [dow_maker(*i) for i in links_and_names_and_headers if None not in i[:-1]]# as last is the headers which can be None
-                tasks_3 = [asyncio.ensure_future(job.download()) for job in jobs]
+                tasks_3 = [job.download(return_exceptions=True) for job in jobs]
                 if len(jobs) != 0:
-                    try:
-                        # will not get progress bars for automatic downloads to speed up the proceess
-                        if (not automatic_downloads):
-                            await utils.multi_progress_bar(jobs)
-                        await asyncio.gather(*tasks_3, return_exceptions=False)
+                    # Progress bars are diabled for now.
+                    # will not get progress bars for automatic downloads to speed up the proceess
+                    # if (not automatic_downloads):
+                    #     await utils.multi_progress_bar(jobs)
+                    results = await asyncio.gather(*tasks_3, return_exceptions=True)
+                    flag = False
+                    for result in results:
+                        if isinstance(result, Exception):
+                            print(COLOUR.info(repr(result)))
+                            flag = True
 
-                    except Exception as e:
-                        print(COLOUR.error(repr(e)))
-                        if debug:
-                            print(COLOUR.grey(links_and_names_and_headers))
-                        return (var.name, None) # this will fail the entire run even if some got downloaded.
+                    if flag and debug:
+                        print(str(links_and_names_and_headers))
+
                 else:
                     # to avoid too much stdout
                     if automatic_downloads == False:
@@ -743,7 +746,7 @@ async def automate_scraping(
 if __name__ == "__main__":
     link = "https://www2.kickassanime.rs/anime/edens-zero-279736"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 16, None, only_player=False, get_ext_servers=True, check_version=True),
+        automate_scraping(link, 17, 18, only_player=False, get_ext_servers=True, check_version=True),
     ))
     print("\nOMEDETO !!")
 elif False:
