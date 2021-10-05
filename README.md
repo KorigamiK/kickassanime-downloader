@@ -15,7 +15,7 @@ A nice and fast asynchronous anime downloader, streamer and more for kickassanim
 
 ## Update :
 
--  Check for updates by running  the alias  or cli.py  and  select "Fetch Latest"  to check if a  newer version is available.
+-  Check for updates by running the alias or cli.py and select "Fetch Latest" to check if a newer version is available.
 
 1. If you used `git` to clone the repository then running `git pull` will do the trick.
 
@@ -80,11 +80,11 @@ What would you like? (Use arrow keys)
    See Config
 ```
 
-2. `kaa update` or `python cli.py update` -> auto updates library
+2. `kaa update` or `python cli.py update` → auto updates library
 
-3. `kaa download` or `python cli.py download` -> starts menu to download a series
+3. `kaa download` or `python cli.py download` → starts menu to download a series
 
-4. `kaa latest` or `python cli.py latest` -> Shows the latest updates on the website
+4. `kaa latest` or `python cli.py latest` → Shows the latest updates on the website
 
 5. Run the alias with commands to stream any anime that you want. `kaa --help` or `python cli.py --help` for list of all the commands.
 
