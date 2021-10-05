@@ -2,7 +2,17 @@ from utilities.watcher import watch, names as server_names
 import asyncio
 import argparse
 
-parser = argparse.ArgumentParser(description="play anime directly")
+commands = '''
+
+commands:
+    update      Autoupdate the library by fetching the latest episodes form to_update.json
+    download    Run the download menu to download a range of episodes
+    latest      Prints the latest updates on the website 
+    check       Checks for any available updates for download
+    
+'''
+
+parser = argparse.ArgumentParser(description="Play anime directly" + commands, formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument(
     "--list",

@@ -80,6 +80,9 @@ if len(argv) > 1:
         
     elif argv[1] == 'latest':
         asyncio.get_event_loop().run_until_complete(choices["Fetch Latest"]())
+
+    elif argv[1] == 'check':
+        asyncio.get_event_loop().run_until_complete(choices["Check For Updates"])
         
     else:
         if platform.startswith("win"):

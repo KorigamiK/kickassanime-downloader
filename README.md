@@ -91,13 +91,19 @@ What would you like? (Use arrow keys)
 6. Here's the output of the above command: 
 
 ```
-$ kaa -h 
-
+$ kaa -h
 usage: play.py [-h] [--list] [--ep EP] [--url URL] [--opt OPT] [--ext]
                [--stop] [--encode] [--custom_server [CUSTOM_SERVER]]
                [name [name ...]]
 
-play anime directly
+Play anime directly
+
+commands:
+    update      Autoupdate the library by fetching the latest episodes form to_update.json
+    download    Run the download menu to download a range of episodes
+    latest      Prints the latest updates on the website 
+    check       Checks for any available updates for download
+    
 
 positional arguments:
   name                  Name of the anime to search
