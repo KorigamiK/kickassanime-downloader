@@ -669,12 +669,11 @@ async def automate_scraping(
                 print(COLOUR.purple_back(f"Starting all downloads for {var.name}"))
                 print(COLOUR.purple_back('Please Wait...'))
                 jobs = [dow_maker(*i) for i in links_and_names_and_headers if None not in i[:-1]]# as last is the headers which can be None
-                tasks_3 = [job.download(return_exceptions=True) for job in jobs]
+                tasks_3 = [asyncio.ensure_future(job.download(return_exceptions=True)) for job in jobs]
                 if len(jobs) != 0:
-                    # Progress bars are diabled for now.
-                    # will not get progress bars for automatic downloads to speed up the proceess
-                    # if (not automatic_downloads):
-                    #     await utils.multi_progress_bar(jobs)
+                    # will not get progress bars for automatic downloads to speed up the proceess or if multiple episodes are bing downloaded
+                    if (not automatic_downloads) and len(jobs) == 1:
+                        await utils.multi_progress_bar(jobs)
                     results = await asyncio.gather(*tasks_3, return_exceptions=True)
                     flag = False
                     for result in results:
