@@ -1,4 +1,4 @@
-version = 4.2
+version = 4.3
 
 if __name__ == "__main__":
     print(f"Updating version from {version}")
