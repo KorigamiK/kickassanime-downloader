@@ -15,3 +15,5 @@ typing-extensions
 urllib3
 yarl
 requests
+prompt-toolkit==1.0.14
+SimpleMenu
