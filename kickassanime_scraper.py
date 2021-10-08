@@ -76,6 +76,11 @@ class kickass:
                 # print(data.keys())
                 results = data["anime"]["episodes"]
                 break
+
+        if not results:
+            print(COLOUR.warn('This show has not yet been updated. Please try some time later.'))
+            exit(1)
+
         try:
             self.last_episode = int(results[0]["slug"].split("/")[-1].split("-")[1])
         except ValueError:  # for ovas and stuff
@@ -745,7 +750,7 @@ async def automate_scraping(
 if __name__ == "__main__":
     link = "https://www2.kickassanime.rs/anime/edens-zero-279736"
     print(asyncio.get_event_loop().run_until_complete(
-        automate_scraping(link, 17, 18, only_player=False, get_ext_servers=True, check_version=True),
+        automate_scraping(link, None, 1, only_player=False, get_ext_servers=True, check_version=True),
     ))
     print("\nOMEDETO !!")
 elif False:
