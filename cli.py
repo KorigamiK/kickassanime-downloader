@@ -19,8 +19,6 @@ except ImportError:
 
 base_url = "https://www2.kickassanime.lol"
 
-
-
 async def search_and_download():
     query = input("Enter anime name: ")
     data = await player.search(query)
