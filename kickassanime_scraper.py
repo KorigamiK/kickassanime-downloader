@@ -749,7 +749,7 @@ async def automate_scraping(
 
 if __name__ == "__main__":
     link = "https://www2.kickassanime.rs/anime/edens-zero-279736"
-    print(asyncio.get_event_loop().run_until_complete(
+    print(asyncio.run(
         automate_scraping(link, None, 1, only_player=False, get_ext_servers=True, check_version=True),
     ))
     print("\nOMEDETO !!")

@@ -95,6 +95,11 @@ if to_list:
         print(j, i)
     exit()
 
-asyncio.get_event_loop().run_until_complete(
-    watch(episode, link=link, query=query, option_number=opt, ext_only=ext_only, custom_server=custom_server, stop=stop, encode=encode)
-)
+
+if __name__ == '__main__':
+    try:
+        asyncio.run(
+            watch(episode, link=link, query=query, option_number=opt, ext_only=ext_only, custom_server=custom_server, stop=stop, encode=encode)
+        )
+    except RuntimeError:
+        print('Exit')

@@ -4,7 +4,7 @@ from sys import platform, argv
 from os import system
 import asyncio
 try:
-    from selectmenu import SelectMenu
+    from selectmenu import SelectMenu #type: ignore
 except ImportError:
     if len(argv) <= 1: print('\nSelectmenu not installed, using basic menu layout.')
     class SelectMenu:
@@ -71,16 +71,16 @@ choices = {
 
 if len(argv) > 1:
     if argv[1] == 'update':
-        asyncio.get_event_loop().run_until_complete(choices["Autoupdate Library"]())
+        asyncio.run(choices["Autoupdate Library"]())
         
     elif argv[1] == 'download':
-        asyncio.get_event_loop().run_until_complete(choices["Search And Download"]())
+        asyncio.run(choices["Search And Download"]())
         
     elif argv[1] == 'latest':
-        asyncio.get_event_loop().run_until_complete(choices["Fetch Latest"]())
+        asyncio.run(choices["Fetch Latest"]())
 
     elif argv[1] == 'check':
-        asyncio.get_event_loop().run_until_complete(choices["Check For Updates"]())
+        asyncio.run(choices["Check For Updates"]())
         
     else:
         if platform.startswith("win"):
@@ -94,4 +94,4 @@ menu.add_choices(list(choices.keys()))
 result = menu.select("What would you like?")
 print(result)
 
-asyncio.get_event_loop().run_until_complete(choices[result]())
+asyncio.run(choices[result]())

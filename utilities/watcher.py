@@ -198,6 +198,6 @@ if __name__ == "__main__":
     opt = -2
     flag = False
     server = '' # or 'PINK-BIRD'
-    asyncio.get_event_loop().run_until_complete(
+    asyncio.run(
         watch(episode, link=link, query=query, option_number=opt, ext_only=flag, custom_server=server, encode=False)
     )
