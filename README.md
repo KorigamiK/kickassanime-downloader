@@ -4,13 +4,13 @@ A nice and fast asynchronous anime downloader, streamer and more for kickassanim
 [Here's a demo](#some-usage-examples) of this tool.
 
 ## Index: 
-- [INSTALLATION](#installation)
-- [UPDATE](#update)
-- [COMMAND ALIAS](#to-set-up-the-command-alias)
-- [CONFIGURATION](#config)
-- [USAGE](#usage)
+- [Installation](#installation)
+- [Update](#update)
+- [Command Alias](#to-set-up-the-command-alias)
+- [Configuration](#config)
+- [Usage](#usage)
 - [FAQ](#faq)
-- [USAGE EXAMPLES](#some-usage-examples)
+- [Usage Examples](#some-usage-examples)
 
 
 ## Update :

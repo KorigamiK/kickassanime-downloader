@@ -1,3 +1,4 @@
+wheel
 aiofiles
 aiohttp
 async-timeout
