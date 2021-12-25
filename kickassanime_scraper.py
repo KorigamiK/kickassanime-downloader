@@ -13,10 +13,10 @@ from bs4 import BeautifulSoup as bs
 from tabulate import tabulate
 from __version__ import version as CURRENT_VERSION
 from urllib.parse import urlparse, parse_qs
-
+import enum
 
 try:  # trying to apply uvloop
-    import uvloop #type: ignore
+    import uvloop  # type: ignore
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 except:
     pass
@@ -30,11 +30,26 @@ with open("./Config/config.json") as file:
     WEBSITE_DOMAIN = data["WEBSITE_DOMAIN"]
     check_updates: bool = data["check_updates"]
 
+class CONFIGS(enum.Enum):
+    config = 1
+    to_update = 2
+    watch_config = 3
+
+def update_config(case: CONFIGS, config: dict):
+    file_name = os.path.join('.', 'Config', case.name + '.json')
+
+    with open(file_name, 'w') as config_to_change:
+        print(file_name)
+        json.dump(config, config_to_change, indent=4, ensure_ascii=False)
+        print('done')
+
 def format_float(num) -> str:
     return f"{num:04.1f}".rstrip("0").rstrip(".")
 
+
 DOMAIN_REGEX = re.compile(r'\.(lol|rs|ro)', re.IGNORECASE)
 GITHUB_REPOSITORY = 'https://github.com/KorigamiK/kickassanime-downloader'
+
 
 class kickass:
     def __init__(
@@ -78,11 +93,13 @@ class kickass:
                 break
 
         if not results:
-            print(COLOUR.warn('This show has not yet been updated. Please try some time later.'))
+            print(COLOUR.warn(
+                'This show has not yet been updated. Please try some time later.'))
             exit(1)
 
         try:
-            self.last_episode = int(results[0]["slug"].split("/")[-1].split("-")[1])
+            self.last_episode = int(
+                results[0]["slug"].split("/")[-1].split("-")[1])
         except ValueError:  # for ovas and stuff
             self.last_episode = 0
 
@@ -111,7 +128,8 @@ class kickass:
         except ValueError:  # for ovas and stuff
             episode_num = 0.0
 
-        if debug: print(COLOUR.grey(f"Getting episode {format_float(episode_num)}"))
+        if debug:
+            print(COLOUR.grey(f"Getting episode {format_float(episode_num)}"))
 
         soup = await fetch(self.episode_link, self.session)
         data: Dict[str, str] = None
@@ -152,7 +170,8 @@ class kickass:
             else:
                 pass
         except:
-            print(COLOUR.error(f"Ext server error. None available for {format_float(episode_num)}"))
+            print(COLOUR.error(
+                f"Ext server error. None available for {format_float(episode_num)}"))
         if ret["download"] != None:
             ret["download"] = await self.get_servers(ret["download"])
         else:
@@ -218,7 +237,8 @@ class kickass:
                 available.append(i)
         # print(available)
         if len(available) == 0:
-            print(COLOUR.warn(f"No available server in config.json for {self.name} episode {format_float(episode_number)}"))
+            print(COLOUR.warn(
+                f"No available server in config.json for {self.name} episode {format_float(episode_number)}"))
             print(COLOUR.warn(f"Try adding {tmp_serv} to the config file"))
             return (None, file_name, None)
 
@@ -244,15 +264,18 @@ class kickass:
         if len(a.final_dow_urls) != 0:
             return (a.final_dow_urls[0].replace(" ", "%20"), file_name, headers)
         else:
-            print(COLOUR.error(f"Cannot download {self.name} episode {format_float(episode_number)}"))
+            print(COLOUR.error(
+                f"Cannot download {self.name} episode {format_float(episode_number)}"))
             return (None, file_name, headers)
 
     async def get_from_player(self, player_links: list, episode_number: float) -> str:
         a = player(self.session)
-        print(COLOUR.info(f"Writing {self.name} episode {format_float(episode_number)}\n"))
+        print(COLOUR.info(
+            f"Writing {self.name} episode {format_float(episode_number)}\n"))
         flag = False
         if len(player_links) > 1:
-            print(COLOUR.info(f"Number of player links is {len(player_links)}"))
+            print(COLOUR.info(
+                f"Number of player links is {len(player_links)}"))
             flag = True
         else:
             pass
@@ -328,7 +351,8 @@ class player:
         """
 
         header = None
-        if (server_name == "Vidstreaming"):  # from get_player_embed_links due to older anime. All the work has already been done
+        # from get_player_embed_links due to older anime. All the work has already been done
+        if (server_name == "Vidstreaming"):
             header = {'Referer': 'https://goload.one'}
             return [server_name, server_link, header]
 
@@ -353,7 +377,7 @@ class player:
             except TypeError:
                 print(COLOUR.error(f'Bad player link for {server_name}'))
                 return [server_name, None, header]
-        
+
         elif server_name == "SAPPHIRE-DUCK":
             script_tag: bytes = get_script()
             if not script_tag:
@@ -364,19 +388,21 @@ class player:
 
             return [
                 server_name,
-                re.search(r'(http.*)"', java_script).group(1).replace(r"\/", r"/"),
+                re.search(r'(http.*)"',
+                          java_script).group(1).replace(r"\/", r"/"),
                 header
             ]
-        
+
         elif server_name == "BETASERVER3" or server_name == "BETAPLAYER":
             res = ""
             links_list = await get_list(soup)
             # for i in links_list:
             #     res += "\t\t{i['label']}: {i['file']}\n"
-            res = {i["label"]: i['file'].replace(' ', '%20').replace('\\', '') for i in links_list if i["file"]}
+            res = {i["label"]: i['file'].replace(' ', '%20').replace(
+                '\\', '') for i in links_list if i["file"]}
             if res:
                 return [server_name, res, header]
-            else: 
+            else:
                 return [server_name, None, header]
 
         elif server_name == "BETA-SERVER":
@@ -385,8 +411,10 @@ class player:
                 .replace("file", r'"file"')
                 .replace("label", r'"label"')
             )
-            links_list = json.loads(re.search(r"\[\{.+\}\]", script_tag).group(0))
-            res = {i["label"].strip(): i["file"].replace('\\', '') for i in links_list}
+            links_list = json.loads(
+                re.search(r"\[\{.+\}\]", script_tag).group(0))
+            res = {i["label"].strip(): i["file"].replace('\\', '')
+                   for i in links_list}
             return [server_name, res, header]
 
         elif server_name == "DR.HOFFMANN":
@@ -412,15 +440,18 @@ class player:
 
             async with self.session.get(server_link.replace('player.php', 'pref.php')) as html:
                 body = await html.text()
-                first_data = decode_atob(body) # fixes padding
-                
-            unvalidated_data = data_regex.search(decode_atob(first_data)).group(0) + '}'
+                first_data = decode_atob(body)  # fixes padding
+
+            unvalidated_data = data_regex.search(
+                decode_atob(first_data)).group(0) + '}'
             final_data = unvalidated_data.replace('\\', '')
             validated = validate_regex.sub('\"', final_data)
-            final_data = json.loads(re.sub(quote_keys_regex, r'\1"\2"\3', validated)) # object is like {sources: [{file: string, type: 'hls'}], image: string}
-            if len(final_data['sources']) > 1: # I haven't found this
+            # object is like {sources: [{file: string, type: 'hls'}], image: string}
+            final_data = json.loads(
+                re.sub(quote_keys_regex, r'\1"\2"\3', validated))
+            if len(final_data['sources']) > 1:  # I haven't found this
                 print(final_data)
-            print(final_data) # For test
+            print(final_data)  # For test
             return [server_name, final_data['sources'][0]['file'], header]
 
         elif server_name == "THETA-ORIGINAL":
@@ -433,10 +464,13 @@ class player:
 
             decoded = str(b64decode(re.search(decode_regex, html).group(0)))
             sources = sources_regex.search(decoded).group(0)
-            sources = json.loads(re.sub(quote_keys_regex, r'\1"\2"\3', sources)) # this is of the format [{file: string, label: '1080p', type: 'mp4'}, ...]
-            if len(sources) > 1: print(sources) # Haven't seen this happen
+            # this is of the format [{file: string, label: '1080p', type: 'mp4'}, ...]
+            sources = json.loads(
+                re.sub(quote_keys_regex, r'\1"\2"\3', sources))
+            if len(sources) > 1:
+                print(sources)  # Haven't seen this happen
             return [server_name, sources[0]['file'], header]
-            
+
         else:
             # print(f"not implemented server {server_name}")
             return [server_name, iframe_url, header]
@@ -444,28 +478,33 @@ class player:
     async def _ext_gogo(self, url):
         page = await fetch(url, self.session)
         tag = str(page.find("div"))
-        return re.search(r"'(http.+)',label", tag).group(1)  # the first (0) result can be .m3u8 or .mp4 but the second (1) is always .m3u8. Can be experimented on later
+        # the first (0) result can be .m3u8 or .mp4 but the second (1) is always .m3u8. Can be experimented on later
+        return re.search(r"'(http.+)',label", tag).group(1)
 
     async def _vidstreaming(self, url):
         page = await fetch(url, self.session)
         # available servers are ['Multiquality Server', 'StreamSB', 'Doodstream', 'Server Hyrax', 'Mp4upload', 'YourUpload']
-        servers = {i.text: i.get('data-video') for i in page.find_all('li', {'class': 'linkserver'}) if i.get('data-video')}
+        servers = {i.text: i.get('data-video') for i in page.find_all(
+            'li', {'class': 'linkserver'}) if i.get('data-video')}
         # download link can also be found.
 
         async def multiquality(key):
             page = await fetch(servers[key], self.session)
-            tag = str(page.find('div', {'class':'videocontent'}))
-            return re.search(r"(?<=file:\s')h.+?(?=',)", tag).group(0) #hls streaming url
+            tag = str(page.find('div', {'class': 'videocontent'}))
+            # hls streaming url
+            return re.search(r"(?<=file:\s')h.+?(?=',)", tag).group(0)
 
         async def streamsb(key):
             # page = await fetch(servers[key], self.session)
             url = servers[key]
             template = 'https://sbplay.org/play/{id}?auto=0&referer=&'
-            player_link = template.format(id=re.search(r'(?<=embed-).+(?=\.html)', url).group(0))
+            player_link = template.format(id=re.search(
+                r'(?<=embed-).+(?=\.html)', url).group(0))
 
             async with self.session.get(player_link) as resp:
-                page = await resp.text() 
-                link = re.search(r'''({file:\s?"|')(http.+)("|')}''', page).group(2)
+                page = await resp.text()
+                link = re.search(
+                    r'''({file:\s?"|')(http.+)("|')}''', page).group(2)
             return link
 
         parsers = {'StreamSB': streamsb, 'Multiquality Server': multiquality}
@@ -473,7 +512,8 @@ class player:
 
         async def try_all(index=0):
             if index == len(available):
-                COLOUR.error('Could not get stream. Try decreasing the priority of this server.')
+                COLOUR.error(
+                    'Could not get stream. Try decreasing the priority of this server.')
                 raise LookupError()
             print(f'Trying {available[index]}')
             try:
@@ -492,7 +532,7 @@ class player:
         except:
             return None
 
-    async def get_ext_server(self, ext_link, server_name)->Tuple[str, Union[None, Dict[str, str]]]:
+    async def get_ext_server(self, ext_link, server_name) -> Tuple[str, Union[None, Dict[str, str]]]:
         '''Parses the kaa-play.me player urls'''
         params = parse_qs(urlparse(ext_link).query)
         url = params['data'][0]
@@ -516,19 +556,20 @@ class player:
         return ret, headers
 
     @staticmethod
-    async def search(query: str, session: ClientSession=None, option: int = None) -> dict:
+    async def search(query: str, session: ClientSession = None, option: int = None) -> dict:
         """ returns dict[name, slug, image] """
         flag = False
         if session is None:
             session = await ClientSession().__aenter__()
             flag = True
-        api_url = (DOMAIN_REGEX.sub(WEBSITE_DOMAIN, "https://www2.kickassanime.rs/api/anime_search"))
+        api_url = (DOMAIN_REGEX.sub(WEBSITE_DOMAIN,
+                   "https://www2.kickassanime.rs/api/anime_search"))
         data = {"keyword": query}
         async with session.post(api_url, data=data) as resp:
             # print(await resp.text())
             resp_data = await resp.json(content_type=None)
         if flag:
-            await session.close() # for one time use
+            await session.close()  # for one time use
         if len(resp_data) != 0:
             if option is not None:
                 return resp_data[option]
@@ -542,7 +583,7 @@ class player:
             return None
 
     @staticmethod
-    async def fetch_latest(session: Union[ClientSession, None]=None) -> None:
+    async def fetch_latest(session: Union[ClientSession, None] = None) -> None:
         flag = False
         if session is None:
             session = await ClientSession().__aenter__()
@@ -551,21 +592,24 @@ class player:
         async with session.get(player.latest_rss) as resp:
             data = bs(await resp.text(), 'html.parser')
 
-        if flag: await session.close()
+        if flag:
+            await session.close()
 
         table = []
         headers = ['Title', 'Episode']
 
         for i in data.find_all('item'):
-            name, episode = i.find('title').text.replace('English', '').replace('Subbed', '').replace('Dubbed', 'Dub').split('Episode')
+            name, episode = i.find('title').text.replace('English', '').replace(
+                'Subbed', '').replace('Dubbed', 'Dub').split('Episode')
             episode = ' '.join([*filter(lambda x: x, episode.split(' '))])
 
-            table.append(map(lambda x: '\n'.join((x[i: i + player.max_table_length].strip() for i in range(0, len(x), player.max_table_length))), 
-            [COLOUR.blue(name), COLOUR.info(episode)]))
-        
+            table.append(map(lambda x: '\n'.join((x[i: i + player.max_table_length].strip() for i in range(0, len(x), player.max_table_length))),
+                             [COLOUR.blue(name), COLOUR.info(episode)]))
+
         print(tabulate(table, headers=headers, tablefmt='psql', showindex=True))
 
-async def check_latest_version(session: Union[ClientSession, None]=None):
+
+async def check_latest_version(session: Union[ClientSession, None] = None):
     flag = False
     if session is None:
         session = await ClientSession().__aenter__()
@@ -576,22 +620,27 @@ async def check_latest_version(session: Union[ClientSession, None]=None):
 
     async with session.get(VERSION_URL) as resp:
         LATEST_VERSION: float = float(LATEST_VERSION_REGEX.search(await resp.text()).group(0))
-    if flag: await session.close()
+    if flag:
+        await session.close()
 
     if CURRENT_VERSION != LATEST_VERSION:
-        print(COLOUR.info(f'New version {LATEST_VERSION} now available over current {CURRENT_VERSION} !'))
+        print(COLOUR.info(
+            f'New version {LATEST_VERSION} now available over current {CURRENT_VERSION} !'))
         print(COLOUR.info(f'Update your files now from {GITHUB_REPOSITORY}'))
 
         if os.path.isdir('./.git'):
             if input('\nWould you like to pull the latest changes using git? (y/n): ') == 'y':
                 print(COLOUR.info('Running git pull...'))
                 os.system('git pull')
-                print(COLOUR.info('Please make sure to check the .eg.json files for new additions or changes, in case any breaking changes have been added.'))
+                print(COLOUR.info(
+                    'Please make sure to check the .eg.json files for new additions or changes, in case any breaking changes have been added.'))
         print()
     elif flag:
-        print(COLOUR.info(f'You are on the latest Version {CURRENT_VERSION} !'))
+        print(COLOUR.info(
+            f'You are on the latest Version {CURRENT_VERSION} !'))
     else:
         pass
+
 
 async def automate_scraping(
     link,
@@ -606,7 +655,7 @@ async def automate_scraping(
     async with ClientSession(
         connector=TCPConnector(ssl=False), headers={"Connection": "keep-alive"}
     ) as sess:
-        
+
         var = kickass(sess, link)
         print(COLOUR.info(var.name))
         tasks = []
@@ -616,7 +665,8 @@ async def automate_scraping(
 
         def write_ext_servers(ext_dict, episode_number):
             with open("episodes.txt", "a+") as f:
-                f.write(f"\n{var.name} episode {format_float(episode_number)}:\n")
+                f.write(
+                    f"\n{var.name} episode {format_float(episode_number)}:\n")
                 for ext_name, ext_link in ext_dict.items():
                     f.write(f"\t\t{ext_name}: {ext_link}\n")
 
@@ -624,9 +674,12 @@ async def automate_scraping(
         player_tasks = []
 
         for i in embed_result:
-            if debug and not automatic_downloads: print(COLOUR.grey(f"Starting episode {format_float(i['ep_num'])}"))
+            if debug and not automatic_downloads:
+                print(COLOUR.grey(
+                    f"Starting episode {format_float(i['ep_num'])}"))
             if i["episode_countdown"] == True:
-                print(COLOUR.info(f'episode {format_float(i["ep_num"])} is still in countdown'))
+                print(COLOUR.info(
+                    f'episode {format_float(i["ep_num"])} is still in countdown'))
                 continue
             elif i["can_download"] and not only_player:
                 download_tasks.append(
@@ -636,9 +689,11 @@ async def automate_scraping(
                 )
             elif (i["ext_servers"] is not None) and get_ext_servers:
                 write_ext_servers(i["ext_servers"], i["ep_num"])
-                print(COLOUR.grey(f"Written ext_servers for episode {format_float(i['ep_num'])}"))
+                print(COLOUR.grey(
+                    f"Written ext_servers for episode {format_float(i['ep_num'])}"))
             else:
-                player_tasks.append(var.get_from_player(i["player"], i["ep_num"]))
+                player_tasks.append(
+                    var.get_from_player(i["player"], i["ep_num"]))
 
         links_and_names_and_headers = await asyncio.gather(*download_tasks)
 
@@ -668,13 +723,16 @@ async def automate_scraping(
             if not only_player:
                 ans = input("\ndownload now y/n?: ")
 
-
         async def use_aiodownloader():
             if len(links_and_names_and_headers) != 0 and [i[0] for i in links_and_names_and_headers] != [None]:
-                print(COLOUR.purple_back(f"Starting all downloads for {var.name}"))
+                print(COLOUR.purple_back(
+                    f"Starting all downloads for {var.name}"))
                 print(COLOUR.purple_back('Please Wait...'))
-                jobs = [dow_maker(*i) for i in links_and_names_and_headers if None not in i[:-1]]# as last is the headers which can be None
-                tasks_3 = [asyncio.ensure_future(job.download(return_exceptions=True)) for job in jobs]
+                # as last is the headers which can be None
+                jobs = [
+                    dow_maker(*i) for i in links_and_names_and_headers if None not in i[:-1]]
+                tasks_3 = [asyncio.ensure_future(job.download(
+                    return_exceptions=True)) for job in jobs]
                 if len(jobs) != 0:
                     # will not get progress bars for automatic downloads to speed up the proceess or if multiple episodes are bing downloaded
                     if (not automatic_downloads) and len(jobs) == 1:
@@ -692,19 +750,21 @@ async def automate_scraping(
                 else:
                     # to avoid too much stdout
                     if automatic_downloads == False:
-                        print(COLOUR.info("Nothing to download"))  # when countdown links may give none and non empty links_and_names_and_headers
+                        # when countdown links may give none and non empty links_and_names_and_headers
+                        print(COLOUR.info("Nothing to download"))
 
             else:
                 # to avoid too much stdout
                 if automatic_downloads == False:
                     print(COLOUR.info("No downloads found"))
-        
+
         async def use_subprocess(l_n_h: tuple):
             def get_process(link, name, header) -> async_subprocess:
                 head = f'-H "Referer: {header["Referer"]}" ' if header else ''
                 optional_args = '-k --location '
                 path = os.path.join(download_location, name)
-                cmd = f'''curl -o "{path}" ''' + optional_args + head + f'"{link}"'
+                cmd = f'''curl -o "{path}" ''' + \
+                    optional_args + head + f'"{link}"'
                 if os.name == 'nt':
                     query = [r'C:\Windows\System32\cmd.exe']
                     return async_subprocess(*query, std_inputs=[cmd, 'exit'], print_stdin=False, print_stdout=False, description=name)
@@ -712,7 +772,8 @@ async def automate_scraping(
                     query = ["bash", "-c", cmd]
                     return async_subprocess(*query, description=name)
 
-            tasks = [get_process(link, name, header) for link, name, header in l_n_h if link]
+            tasks = [get_process(link, name, header)
+                     for link, name, header in l_n_h if link]
 
             if len(tasks) == 0:
                 print(COLOUR.info('Nothing to download'))
@@ -721,17 +782,19 @@ async def automate_scraping(
             await gather_limitter(*tasks, max=max_subprocesses)
 
         if (check_version or check_updates):
-            if not automatic_downloads: # don't check if automatic downloads
+            if not automatic_downloads:  # don't check if automatic downloads
                 await check_latest_version(sess)
 
         if ans == "y" and not only_player:
             if download_using == 'aiodownloader':
                 x = await use_aiodownloader()
-                if x: return x
+                if x:
+                    return x
             elif download_using == 'subprocess':
                 await use_subprocess(links_and_names_and_headers)
             else:
-                print(COLOUR.warn(f'Config: downloader: {download_using} not supported.'))
+                print(COLOUR.warn(
+                    f'Config: downloader: {download_using} not supported.'))
         else:
             if not only_player:
                 write_links(links_and_names_and_headers)
@@ -739,9 +802,10 @@ async def automate_scraping(
         for i in to_play:
             if not only_player and i:
                 print(i)
-                
+
         try:
-            last_downloaded = [i[1] for i in links_and_names_and_headers if i[0]][0]
+            last_downloaded = [i[1]
+                               for i in links_and_names_and_headers if i[0]][0]
             return (var.name, last_downloaded)
         except IndexError:
             # None when no server in config is available or there was no download link available for that episode
@@ -750,7 +814,8 @@ async def automate_scraping(
 if __name__ == "__main__":
     link = "https://www2.kickassanime.rs/anime/edens-zero-279736"
     print(asyncio.run(
-        automate_scraping(link, None, 1, only_player=False, get_ext_servers=True, check_version=True),
+        automate_scraping(link, None, 1, only_player=False,
+                          get_ext_servers=True, check_version=True),
     ))
     print("\nOMEDETO !!")
 elif False:

@@ -1,14 +1,25 @@
 import asyncio
 import json
 from utilities.pace_scraper import COLOUR
-from kickassanime_scraper import automate_scraping
+from kickassanime_scraper import CONFIGS, automate_scraping, update_config
 import re
 import traceback
+from os.path import isdir, join as join_path
+from os import makedirs
+from pathlib import Path 
 
 with open("./Config/to_update.json") as f:
     data = json.loads(f.read())
     needed = data['anime']
-    download_location = data['download_location']
+    download_location: str = data['download_location']
+
+    if not isdir(download_location):
+        print(COLOUR.warn('Download directory not currectly set in `Config/to_update.json`!'))
+        data['download_location'] = download_location = join_path(Path.home(), 'Videos', 'Anime')
+        print(COLOUR.info(f'Changing the directory to {download_location}'))
+        makedirs(download_location, exist_ok=True)
+        update_config(CONFIGS.to_update, data)
+
     pause = data['pause_on_complete']
 
 async def main():
@@ -40,10 +51,8 @@ async def main():
             print(COLOUR.grey(f"Latest for {j}"))
             continue
 
-    with open("./Config/to_update.json", "w") as f:
-        data['anime']=needed
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
+    data['anime']=needed
+    update_config(CONFIGS.to_update, data)
 
 if __name__ == "__main__":
     asyncio.run(main())
