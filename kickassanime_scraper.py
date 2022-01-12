@@ -2,6 +2,7 @@ import re
 import json
 import asyncio
 from utilities.async_web import fetch
+from utilities.helper.mavreckki import Mavereckki
 from utilities.pace_scraper import scraper, COLOUR
 from aiohttp import ClientSession, TCPConnector
 from utilities.async_subprocess import async_subprocess, gather_limitter
@@ -352,9 +353,12 @@ class player:
 
         header = None
         # from get_player_embed_links due to older anime. All the work has already been done
-        if (server_name == "Vidstreaming"):
+        if server_name == "Vidstreaming":
             header = {'Referer': 'https://goload.one'}
             return [server_name, server_link, header]
+
+        elif server_name == "MAVERICKKI":
+            return await Mavereckki(server_name, server_link, self.session)
 
         iframe_url = server_link.replace("player.php?", "pref.php?")
         soup = await fetch(iframe_url, self.session, {'referer': 'https://kaa-play.me/'})
@@ -369,6 +373,7 @@ class player:
             for i in bs_soup.find_all("script"):
                 if "file" in str(i):
                     return json.loads(re.findall(r"\[{.*}]", str(i))[0].replace('\\', '\\\\').replace('"', '\"'))
+            return list()
 
         if server_name == "PINK-BIRD":
             script_tag: str = get_script()

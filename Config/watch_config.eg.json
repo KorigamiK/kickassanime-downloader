@@ -1,13 +1,14 @@
 {
     "priority": {
-        "BETASERVER3": "360p",
+        "MAVERICKKI": null,
         "BETA-SERVER": "360p",
+        "MAGENTA13": null,
         "BETAPLAYER": "720p",
         "Vidstreaming": null,
         "SAPPHIRE-DUCK": null,
         "PINK-BIRD": null,
+        "BETASERVER3": "360p",
         "DR.HOFFMANN": null,
-        "MAGENTA13": null,
         "THETA-ORIGINAL": null
     },
     "ext_priority": [

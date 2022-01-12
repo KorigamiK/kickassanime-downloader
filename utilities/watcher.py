@@ -157,7 +157,6 @@ def play(link, encode, header: Union[None, Dict[str, str]]=None):
             if os.system == 'nt':
                 cmd = [r'C:\Windows\System32\cmd.exe'] + cmd
             subprocess.run(' '.join(cmd), shell=True)
-
             # print(' '.join(cmd))
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
             # process.wait()
@@ -192,7 +191,7 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 if __name__ == "__main__":
     episode = None
-    link = "https://www2.kickassanime.ro/anime/getsuyoubi-no-tawawa-860746"# and None
+    link = "https://www2.kickassanime.ro/anime/shingeki-no-kyojin-the-final-season-part-2-264095/"# and None
     # query = 'maid dragon'
     query = None
     opt = -2
