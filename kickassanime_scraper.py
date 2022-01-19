@@ -203,6 +203,8 @@ class kickass:
             gen = await self.scrape_episodes()
         else:
             gen = episodes_tuple
+        if end == self.last_episode:
+            end = None
         ed = end or self.last_episode
         x = 0
         if end != None:

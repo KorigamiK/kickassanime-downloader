@@ -1,6 +1,4 @@
 from aiohttp.client import ClientSession
-from bs4 import BeautifulSoup
-
 
 async def Mavereckki(server_name: str, server_link: str, client: ClientSession):
     async with client.get(server_link.replace('/embed/', '/api/source/')) as resp:

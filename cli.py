@@ -22,6 +22,8 @@ base_url = "https://www2.kickassanime.lol"
 async def search_and_download():
     query = input("Enter anime name: ")
     data = await player.search(query)
+    if not data:
+        exit(1)
     print(data["name"])
     print("Skip episode numbers to default to first or latest episode")
     link = base_url + data["slug"]

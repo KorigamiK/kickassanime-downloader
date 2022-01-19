@@ -149,12 +149,10 @@ class scraper:
             dow_urls_allqualities += [str("".join(i["href"]))]
         if flag == True:
             setattr(self, "quality", int(input("Enter quality number: ")))
-        if dow_urls_allqualities[self.quality] == "https://kaa-play.com/redirector.php?link=": #dead link
+        if dow_urls_allqualities[self.quality] == "https://kaa-play.com/redirector.php?link=": # this is a dead link
             return None
 
-        self.final_dow_urls += [
-            dow_urls_allqualities[self.quality]
-        ]  # I dunno why but beautifulsoup4 need to be converted to list and then they behave as strings?
+        self.final_dow_urls += [dow_urls_allqualities[self.quality]]
         self.options += [
             '--header="Referer: https://haloani.ru"'
             + " -O "
@@ -173,6 +171,7 @@ class scraper:
         soup = bs(data.decode("utf-8"), "html.parser")
         flag = True
         dow_urls_allqualities = []
+        available_qualities = []
         for j, i in enumerate(soup.select("a")):
             try:
                 self.quality
@@ -180,10 +179,17 @@ class scraper:
             except:
                 print(j, i.text)
             dow_urls_allqualities += ["/".join(link.split('/')[:-1]) + "/" + i["href"]]
+            available_qualities.append(i.text.strip())
 
         if flag == True:
             setattr(self, "quality", int(input("Enter quality number: ")))
-        self.final_dow_urls += [dow_urls_allqualities[self.quality]]
+        try:
+            self.final_dow_urls += [dow_urls_allqualities[self.quality]]
+        except IndexError:
+            print(COLOUR.warn(f'Index {self.quality} not found in {", ".join(available_qualities)}'))
+            print(COLOUR.warn(f'Defaulting to {available_qualities[-1]}'))
+            self.final_dow_urls.append(dow_urls_allqualities[-1])
+
         self.options += [
             "-O " + (self.name + " " + self.episode + ".mp4").replace(" ", "_")
         ]
