@@ -496,7 +496,10 @@ class player:
         # download link can also be found.
 
         async def multiquality(key):
-            page = await fetch(servers[key], self.session)
+            try:
+                page = await fetch(servers[key], self.session)
+            except:
+                raise Exception('Server multiquality not found.')
             tag = str(page.find('div', {'class': 'videocontent'}))
             # hls streaming url
             return re.search(r"(?<=file:\s')h.+?(?=',)", tag).group(0)
@@ -505,14 +508,25 @@ class player:
             # page = await fetch(servers[key], self.session)
             url = servers[key]
             template = 'https://sbplay.org/play/{id}?auto=0&referer=&'
-            player_link = template.format(id=re.search(
-                r'(?<=embed-).+(?=\.html)', url).group(0))
-
-            async with self.session.get(player_link) as resp:
-                page = await resp.text()
-                link = re.search(
-                    r'''({file:\s?"|')(http.+)("|')}''', page).group(2)
-            return link
+            _id = re.search(r'(?<=embed-).+(?=\.html)', url)
+            if _id:
+                player_link = template.format(id=_id.group(0))
+                async with self.session.get(player_link) as resp:
+                    page = await resp.text()
+                    link = re.search(
+                        r'''({file:\s?"|')(http.+)("|')}''', page).group(2)
+                return link
+            else:
+                raise Exception('Not implemented') # this doesn't work for now
+                async with self.session.get(url.replace('/e/', '/d/')) as resp:
+                    soup = bs(await resp.text(), 'html.parser')
+                    links = []
+                    for tag in soup.find_all('a', {'href': '#', 'onclick': True}):
+                        args = re.search(r'(?<=download_video\().+(?=\))', tag.attrs.get('onclick')).group(0)
+                        code, mode, hashed = map(lambda x: x.replace("'", ''), args.split(','))
+                dl_url = 'https://' + url.split('/')[2] +'/dl?op=download_orig&id='+code+'&mode='+mode+'&hash='+hashed
+                async with self.session.post(dl_url) as resp:
+                    soup = bs(await resp.text(), 'html.parser')
 
         parsers = {'StreamSB': streamsb, 'Multiquality Server': multiquality}
         available = list(parsers.keys())

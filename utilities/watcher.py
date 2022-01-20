@@ -190,8 +190,8 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 
 if __name__ == "__main__":
-    episode = None
-    link = "https://www2.kickassanime.ro/anime/shingeki-no-kyojin-the-final-season-part-2-264095/"# and None
+    episode = 1
+    link = "https://www2.kickassanime.ro/anime/yuragi-sou-no-yuuna-san-ova-989096/episode-01-540521"# and None
     # query = 'maid dragon'
     query = None
     opt = -2
