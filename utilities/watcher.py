@@ -142,6 +142,8 @@ def play(link, encode, header: Union[None, Dict[str, str]]=None):
             if 'streamani' not in link:
                 if header:
                     query += f' --http-referrer="{header["Referer"]}"'
+                    if header.get('Subtitle') and len(header.get('Subtitle')):
+                        query += ' --sub-files="'+':'.join([i.replace(':', '\:') for i in header.get('Subtitle')])+'"'
                 else:
                     query += ' --http-referrer="https://betaplayer.life/"'
             subprocess.run(query, shell=True)
@@ -149,7 +151,10 @@ def play(link, encode, header: Union[None, Dict[str, str]]=None):
             cmd = ["mpv", f'"{link}"'] # I know hardcoding is bad
             if 'streamani' not in link:
                 if header:
-                    cmd.append(f'--http-header-fields="Referer: {header["Referer"]}"')
+                    cmd.append(f'--http-header-fields="Referer: {header.get("Referer")}"')
+                    if header.get('Subtitle') and len(header.get('Subtitle')):
+                        cmd.append('--sub-files="'+':'.join([i.replace(':', '\:') for i in header.get('Subtitle')])+'"')
+
                 else:
                     cmd.append('--http-header-fields="Referer: https://betaplayer.life/"')
             cmd += mpv_args
@@ -190,8 +195,8 @@ async def watch(episode, query=None, link=None, option_number=None, ext_only=Fal
 
 
 if __name__ == "__main__":
-    episode = 1
-    link = "https://www2.kickassanime.ro/anime/yuragi-sou-no-yuuna-san-ova-989096/episode-01-540521"# and None
+    episode = 3
+    link = "https://www2.kickassanime.ro/anime/shingeki-no-kyojin-the-final-season-part-2-264095/episode-03-807343"# and None
     # query = 'maid dragon'
     query = None
     opt = -2

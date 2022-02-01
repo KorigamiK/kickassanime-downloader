@@ -350,7 +350,7 @@ class player:
         """ 
             returns [server_name, link, header] where
             link: str | {quality: link}
-            header: None | {Referer: url}
+            header: None | {Referer: url, Subtitle?: list[url]}
         """
 
         header = None

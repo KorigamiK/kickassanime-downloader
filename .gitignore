@@ -13,3 +13,4 @@ bad.py
 tempCodeRunnerFile.py
 *.ts
 # .github
+*.js

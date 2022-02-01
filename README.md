@@ -36,7 +36,7 @@ The setup is a little tedious at the moment, but I might make a nice installable
 
 4. Run `pip install -r requirements.txt`
 
-5. `[Optional]` if you are on Linux also run `pip install SelectMenu` to get the nice looking command line menu.
+5. `[Optional]` if you are on Linux also run `pip install SelectMenu` and `pip install uvloop` to get the nice looking command line menu with blazing fast performance!
 
 6. Navigate to your download directory and navigate to the `Config` folder (`~/Documents/kickassanime-downloader/Config` for example). 
 

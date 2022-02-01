@@ -4,5 +4,6 @@
     "editor.bracketPairColorization.enabled": true,
     "workbench.colorCustomizations": {
         "contrastBorder": "#dbb1b11a"
-    }
+    },
+    "editor.formatOnSave": false
 }
