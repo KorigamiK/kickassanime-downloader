@@ -1,12 +1,15 @@
+from functools import reduce
 import re
 import json
 import asyncio
+from shutil import copyfile
 from utilities.async_web import fetch
 from utilities.helper.mavreckki import Mavereckki
 from utilities.pace_scraper import scraper, COLOUR
 from aiohttp import ClientSession, TCPConnector
 from utilities.async_subprocess import async_subprocess, gather_limitter
 import os
+from os.path import isfile
 from aiodownloader import downloader, utils
 from typing import List, Dict, Tuple, Union
 from base64 import b64decode
@@ -22,14 +25,29 @@ try:  # trying to apply uvloop
 except:
     pass
 
-with open("./Config/config.json") as file:
-    data = json.loads(file.read())
-    priority = data["priority"]
-    debug = data["debug"]
-    download_using = data["downloader"]
-    max_subprocesses = data["max_subprocesses"]
-    WEBSITE_DOMAIN = data["WEBSITE_DOMAIN"]
-    check_updates: bool = data["check_updates"]
+try:
+    with open("./Config/config.json") as file:
+        data = json.loads(file.read())
+        priority = data["priority"]
+        debug = data["debug"]
+        download_using = data["downloader"]
+        max_subprocesses = data["max_subprocesses"]
+        WEBSITE_DOMAIN = data["WEBSITE_DOMAIN"]
+        check_updates: bool = data["check_updates"]
+
+except FileNotFoundError:
+    eg_configs = lambda x, non=False: f"./Config/{x}{'.eg' if not non else ''}.json"
+    configs = ['config','to_update','watch_config']
+    
+    if reduce(lambda a, b: a and isfile(eg_configs(b)), configs, True):
+        print(COLOUR.warn("Configs not setup. Using default configs..."))
+        for config in configs:
+            copyfile(eg_configs(config), eg_configs(config, non=True))
+        print(COLOUR.warn("Configs created. Restart the program."))
+    else:
+        print(COLOUR.error('Config files not found. Please place the `.eg.json` files in the `Config` directory.'))
+    exit()
+
 
 class CONFIGS(enum.Enum):
     config = 1
