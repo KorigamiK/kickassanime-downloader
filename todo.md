@@ -1,9 +1,9 @@
 # Finish these tasks
 
-### Todo
+### To-do
 
-- [ ] Use CrawlJob files instead of txt files 
-  - Better for future use and archiving of urls of already downloaded files.
+- [ ] Use CrawlJob files instead of TXT files 
+  - Better for future use and archiving of URLs of already downloaded files.
 
 ### Done ✓
 
