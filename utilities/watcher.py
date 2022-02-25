@@ -126,6 +126,7 @@ def play(link, encode, header: Union[None, Dict[str, str]]=None):
         if debug:
             print(COLOUR.blue(link))
         if encode and 'm3u8' in link:
+            print(f'Headers for this episode are: \n{header}')
             print('Run this to download the stream ->')
             print(f'ffmpeg -i "{link}" -map 0:p:{mpv_args[0][-1]} -c:v libx265 -c:a copy -preset fast -x265-params crf=26 out.ts')
             print('Run this to encode the stream ->')
