@@ -1,9 +1,13 @@
 # Kickassanime Downloader
-A nice and fast asynchronous anime downloader, streamer and more for kickassanime. 
+
+    Not working at the moment
+
+A nice and fast asynchronous anime downloader, streamer and more for kickassanime.
 
 [Here's a demo](#some-usage-examples) of this tool.
 
-## Index: 
+## Index:
+
 - [Installation](#installation)
 - [Update](#update)
 - [Command Alias](#to-set-up-the-command-alias)
@@ -12,17 +16,15 @@ A nice and fast asynchronous anime downloader, streamer and more for kickassanim
 - [FAQ](#faq)
 - [Usage Examples](#some-usage-examples)
 
-
 ## Update :
 
--  Check for updates by running the alias or cli.py and select "Fetch Latest" to check if a newer version is available.
+- Check for updates by running the alias or cli.py and select "Fetch Latest" to check if a newer version is available.
 
 1. If you used `git` to clone the repository then running `git pull` will do the trick.
 
 2. If you downloaded the repository as a zip file then you need to download the repository again and replace all the files except the `Config` folder
 
 3. You would need to check if there are any changes to the `.eg.json` files in the `Config` folder (there may be some breaking changes) and change your `.json` files in the `Config` folder accordingly.
-
 
 ## Installation :
 
@@ -38,10 +40,9 @@ The setup is a little tedious at the moment, but I might make a nice installable
 
 5. `[Optional]` if you are on Linux also run `pip install SelectMenu` and `pip install uvloop` to get the nice looking command line menu with blazing fast performance!
 
-6. Navigate to your download directory and navigate to the `Config` folder (`~/Documents/kickassanime-downloader/Config` for example). 
+6. Navigate to your download directory and navigate to the `Config` folder (`~/Documents/kickassanime-downloader/Config` for example).
 
 7. Rename all the `.eg.json` and remove the `.eg` from the file name. Open each one of them and adjust the configurations as you want. Refer to [Config section.](#config)
-
 
 8. Set up the command line aliases [from the wiki](#to-set-up-the-command-alias) or run the command line interface directly by running `python cli.py`.
 
@@ -50,18 +51,18 @@ The setup is a little tedious at the moment, but I might make a nice installable
 10. Now profit.
 
 ## To set up the command alias:
+
 1. [For windows](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Windows)
 
 2. [For Linux/Mac](https://github.com/KorigamiK/kickassanime-downloader/wiki/Command-alias-Linux-Mac)
-
 
 ## Config :
 
 1.  The quality of downloads from servers can be adjusted in the `config.json` or from example `~/Documents/kickassanime-downloader/Config/config.json`
 
-2. The numbers for each of the servers refer to the qualities in the order in which they appear on the website.
+2.  The numbers for each of the servers refer to the qualities in the order in which they appear on the website.
 
-3. For example, for KICKASSANIMEX the numbers would refer to the qualities like this:
+3.  For example, for KICKASSANIMEX the numbers would refer to the qualities like this:
 
     ![qualities](/example/quality_selection.jpg)
 
@@ -72,11 +73,11 @@ The setup is a little tedious at the moment, but I might make a nice installable
 ```
 $ kaa
 What would you like? (Use arrow keys)
- > Play Episode            
-   Search And Download     
-   Autoupdate Library      
-   Fetch Latest            
-   Check For Updates       
+ > Play Episode
+   Search And Download
+   Autoupdate Library
+   Fetch Latest
+   Check For Updates
    See Config
 ```
 
@@ -88,7 +89,7 @@ What would you like? (Use arrow keys)
 
 5. Run the alias with commands to stream any anime that you want. `kaa --help` or `python cli.py --help` for list of all the commands.
 
-6. Here's the output of the above command: 
+6. Here's the output of the above command:
 
 ```
 $ kaa -h
@@ -101,9 +102,9 @@ Play anime directly
 commands:
     update      Autoupdate the library by fetching the latest episodes form to_update.json
     download    Run the download menu to download a range of episodes
-    latest      Prints the latest updates on the website 
+    latest      Prints the latest updates on the website
     check       Checks for any available updates for download
-    
+
 
 positional arguments:
   name                  Name of the anime to search
@@ -136,18 +137,17 @@ If you have any questions about errors or installation you can check the [issues
 You are welcome to make an issue for any bug or error or feature that you might need.
 ```
 
-#### ```If you encounter any problems due to repeated requests and cloudflare protection, wait for some time and then run the script again.```
-
+#### `If you encounter any problems due to repeated requests and cloudflare protection, wait for some time and then run the script again.`
 
 ## Some usage examples:
 
 1. Auto update your ongoing series for new episodes
-![autoupdate](/example/autoupdate.gif)
+   ![autoupdate](/example/autoupdate.gif)
 
 2. Play any episode of any show
-![play episode](/example/play_ep.gif)
+   ![play episode](/example/play_ep.gif)
 
 3. Download a range of episodes of any show
-![search and download](/example/search_and_download.gif)
+   ![search and download](/example/search_and_download.gif)
 
 Make sure to correctly create the config files or remove the `.eg` from the file names in the `config` folder.
